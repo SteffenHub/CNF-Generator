@@ -1,157 +1,98 @@
 import org.sat4j.specs.TimeoutException;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        InputData iD = new Dialog().startDialog();
+        // All found Rules. Insert Family Rules
+        List<int[]> rules = new ArrayList<>(iD.familyRules);
 
-        List<int[]> regeln = new ArrayList<>();
-
-
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Wie viele PR-Nummern soll es geben.");
-        int anzahlPRNummern = Integer.parseInt(scanner.nextLine());
-
-        System.out.println("wie groß dürfen Familien min-max sein. Bsp: 1-4");
-        String minMaxFamSizeInput = scanner.nextLine();
-        String[] split = minMaxFamSizeInput.split("-");
-        int minFamSize = Integer.parseInt(split[0]);
-        int maxFamSize = Integer.parseInt(split[1]);
-
-        Random zufallsgenerator = new Random();
-        int prLauf = 0;
-        while (prLauf < anzahlPRNummern) {
-            int famGroesse = minFamSize + zufallsgenerator.nextInt(maxFamSize + 1 - minFamSize);
-
-            if (prLauf + famGroesse > anzahlPRNummern) {
-                famGroesse = anzahlPRNummern - prLauf;
-            }
-            int[] neueFamRegeln = new int[famGroesse];
-            int innerCount = 0;
-            for (int i = prLauf; i < prLauf + famGroesse; i++) {
-                neueFamRegeln[innerCount] = i + 1;
-                ++innerCount;
-            }
-            prLauf = prLauf + famGroesse;
-            regeln.addAll(buildfamilyRules(neueFamRegeln));
-        }
-        for (int[] famRegel : regeln) {
-            System.out.println(Arrays.toString(famRegel));
-        }
-        System.out.println("Das waren die Familien.");
-        System.out.println("Nur die Familien Regeln ergeben eine Varianz von:");
-        BigInteger varianz = Operation.getVariance(regeln, anzahlPRNummern);
-        System.out.println(varianz);
-        System.out.println("bzw.");
-        System.out.println(Operation.punkteInBigInt(varianz));
-        System.out.println("Welche Varianz soll beibehalten werden, mit den weiteren Regeln, die unabhaengig von den Familien hinzugefuegt werden");
-        System.out.println("Schreibe OHNE Punkte. Das ergebnis kann bis zu 5% von der eingegebenen Varianz abweichen");
-        BigInteger sollHabenVarianz = new BigInteger(scanner.nextLine());
-        BigInteger moeglicheAbweichung = Operation.calculatePercentage(sollHabenVarianz, 5);
-        System.out.println("maximale Abweichung im Ergebnis: " + moeglicheAbweichung);
-
-        System.out.println("welche laengen sollen die anderen Familien unabhaengigen Regeln haben. z.B. (1-3)");
-        String minMaxRuleSizeInput = scanner.nextLine();
-        split = minMaxRuleSizeInput.split("-");
-        int minRuleSize = Integer.parseInt(split[0]);
-        int maxRuleSize = Integer.parseInt(split[1]);
-
-        System.out.println("Wie viel Prozent der Variablen dürfen False sein. Scheibe als dezimalzahl. z.B. 0.11 oder 0.04");
-        System.out.println("Nach dieser Eingabe Frage ich nach den True Variablen");
-        double percentageFalseVarsDouble = Double.parseDouble(scanner.nextLine());
-        int maximumFalseVars = (int) (anzahlPRNummern * percentageFalseVarsDouble);
-        System.out.println("Das ergibt " + maximumFalseVars + " Variablen, die immer False sein dürfen");
-
-        System.out.println("Wie viel Prozent der Variablen dürfen True sein. Scheibe als dezimalzahl. z.B. 0.09 ");
-        double percentageTrueVarsDouble = Double.parseDouble(scanner.nextLine());
-        int maximumTrueVars = (int) (anzahlPRNummern * percentageTrueVarsDouble);
-        System.out.println("Das ergibt " + maximumTrueVars + " Variablen, die immer True sein dürfen");
-
-        SatSolver satSolver = new SatSolver(regeln);
+        Random rand = new Random();
+        BigInteger varianz = Operation.getVariance(rules, iD.numberOfVariables);
+        SatSolver satSolver = new SatSolver(rules);
         int triedFalseVars = 0;
         int triedTrueVars = 0;
         boolean machWeiter = true;
         while (machWeiter) {
             if (triedTrueVars > 400){
                 triedTrueVars = 0;
-                --maximumTrueVars;
-                if (maximumTrueVars < 0){
-                    maximumTrueVars = 0;
+                --iD.trueVars;
+                if (iD.trueVars < 0){
+                    iD.trueVars = 0;
                 }
             }
             if (triedFalseVars > 400){
                 triedFalseVars = 0;
-                --maximumFalseVars;
-                if (maximumFalseVars < 0){
-                    maximumFalseVars = 0;
+                --iD.falseVars;
+                if (iD.falseVars < 0){
+                    iD.falseVars = 0;
                 }
             }
             System.out.println("-----------------------------------------------------------------------------");
             boolean wirdWiederGeloescht = false;
             int[] neueRegel;
-            if (maximumTrueVars > countTrueVars(satSolver,anzahlPRNummern)) {
+            if (iD.trueVars > countTrueVars(satSolver, iD.numberOfVariables)) {
                 ++triedTrueVars;
-                int[] possibleTrueVars = getPossibleTrueVars(satSolver,anzahlPRNummern);
-                int index = zufallsgenerator.nextInt(possibleTrueVars.length);
+                int[] possibleTrueVars = getPossibleTrueVars(satSolver,iD.numberOfVariables);
+                int index = rand.nextInt(possibleTrueVars.length);
                 neueRegel = new int[]{possibleTrueVars[index]};
-            } else if (maximumFalseVars > countFalseVars(satSolver,anzahlPRNummern)){
+            } else if (iD.falseVars > countFalseVars(satSolver,iD.numberOfVariables)){
                 ++triedFalseVars;
-                int[] possibleFalseVars = getPossibleFalseVars(satSolver,anzahlPRNummern);
-                int index = zufallsgenerator.nextInt(possibleFalseVars.length);
+                int[] possibleFalseVars = getPossibleFalseVars(satSolver,iD.numberOfVariables);
+                int index = rand.nextInt(possibleFalseVars.length);
                 neueRegel = new int[]{-possibleFalseVars[index]};
             }else {
-                int naechsteRegelSize = minRuleSize + zufallsgenerator.nextInt(maxRuleSize + 1 - minRuleSize);
+                int naechsteRegelSize = iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize);
                 neueRegel = new int[naechsteRegelSize];
                 for (int i = 0; i < naechsteRegelSize; i++) {
-                    int neuePR = zufallsgenerator.nextInt(anzahlPRNummern);
+                    int neuePR = rand.nextInt(iD.numberOfVariables);
                     neueRegel[i] = -(neuePR + 1);
                 }
             }
             System.out.println("Fuege Regel hinzu: " + Arrays.toString(neueRegel));
-            regeln.add(neueRegel);
+            rules.add(neueRegel);
             try {
                 satSolver.addRule(neueRegel);
             } catch (Exception e) {
                 System.err.println("Diese Regel erzeugt eine Kontradiktion, ich nehme sie wieder raus");
-                regeln.remove(neueRegel);
-                satSolver = new SatSolver(regeln);
+                rules.remove(neueRegel);
+                satSolver = new SatSolver(rules);
                 continue;
             }
-            int falseVarsBisJetzt = countFalseVars(satSolver, anzahlPRNummern);
-            if (!(falseVarsBisJetzt <= maximumFalseVars)) {
-                System.err.println("Diese Regel würde zu viele variablen ausschließen und nicht mehr möglich machen diese zu wählen: " + falseVarsBisJetzt + "/" + maximumFalseVars);
-                regeln.remove(neueRegel);
-                satSolver = new SatSolver(regeln);
+            int falseVarsBisJetzt = countFalseVars(satSolver, iD.numberOfVariables);
+            if (!(falseVarsBisJetzt <= iD.falseVars)) {
+                System.err.println("Diese Regel würde zu viele variablen ausschließen und nicht mehr möglich machen diese zu wählen: " + falseVarsBisJetzt + "/" + iD.falseVars);
+                rules.remove(neueRegel);
+                satSolver = new SatSolver(rules);
                 continue;
             }
-            int trueBisJetzt = countTrueVars(satSolver, anzahlPRNummern);
-            if (!(trueBisJetzt <= maximumTrueVars)) {
-                System.err.println("Diese Regel würde zu viele variablen immer wahr machen: " + trueBisJetzt + "/" + maximumTrueVars);
-                regeln.remove(neueRegel);
-                satSolver = new SatSolver(regeln);
+            int trueBisJetzt = countTrueVars(satSolver, iD.numberOfVariables);
+            if (!(trueBisJetzt <= iD.trueVars)) {
+                System.err.println("Diese Regel würde zu viele variablen immer wahr machen: " + trueBisJetzt + "/" + iD.trueVars);
+                rules.remove(neueRegel);
+                satSolver = new SatSolver(rules);
                 continue;
             }
             try {
-                varianz = Operation.getVariance(regeln, anzahlPRNummern);
+                varianz = Operation.getVariance(rules, iD.numberOfVariables);
                 System.out.println("Die Varianz mit der Regeln ist nun: " + Operation.punkteInBigInt(varianz));
-                System.out.println("Es Fehlen noch: " + Operation.punkteInBigInt(varianz.subtract(sollHabenVarianz)));
-                if (varianz.compareTo(sollHabenVarianz.subtract(moeglicheAbweichung)) < 0) {
+                System.out.println("Es Fehlen noch: " + Operation.punkteInBigInt(varianz.subtract(iD.goalVariance)));
+                if (varianz.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
                     System.err.println("das drückt die Varianz zu doll ich nehme die Regel wieder raus");
-                    regeln.remove(neueRegel);
-                    satSolver = new SatSolver(regeln);
+                    rules.remove(neueRegel);
+                    satSolver = new SatSolver(rules);
                     wirdWiederGeloescht = true;
-                } else if (varianz.compareTo(sollHabenVarianz.subtract(moeglicheAbweichung)) > 0 && varianz.compareTo(sollHabenVarianz.add(moeglicheAbweichung)) < 0) {
+                } else if (varianz.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) > 0 && varianz.compareTo(iD.goalVariance.add(iD.goalVarianceDeviation)) < 0) {
                     System.out.println("Ich habe ein Regelwerk gefunden, dass die Varianz erfüllt");
                     machWeiter = false;
                 }
             } catch (Exception e) {
                 System.err.println("Beim finden der Varianz ist etwas beim c2d schief gelaufen. Ich nehme diese und die vorherige Regel wieder raus");
-                regeln.remove(neueRegel);
-                regeln.remove(regeln.size() - 1);
-                satSolver = new SatSolver(regeln);
+                rules.remove(neueRegel);
+                rules.remove(rules.size() - 1);
+                satSolver = new SatSolver(rules);
                 wirdWiederGeloescht = true;
             }
             if (!wirdWiederGeloescht) {
@@ -166,49 +107,27 @@ public class Main {
 
         List<String> fileOutput = new ArrayList<>();
         fileOutput.add("c ");
-        fileOutput.add("c Input Variance: " + sollHabenVarianz);
+        fileOutput.add("c Input Variance: " + iD.goalVariance);
         fileOutput.add("c Actual Variance: " + varianz);
-        fileOutput.add("c Input number of vars : " + anzahlPRNummern);
-        fileOutput.add("c Input Fam size: " + minMaxFamSizeInput);
-        fileOutput.add("c Input Rule size: " + minMaxRuleSizeInput);
-        fileOutput.add("c Input False Variables: " + percentageFalseVarsDouble * 100 + " %");
-        fileOutput.add("c Actual False Variables: " + countFalseVars(satSolver, anzahlPRNummern) + " Vars");
-        fileOutput.add("c Input True Variables: " + percentageTrueVarsDouble * 100 + " %");
-        fileOutput.add("c Actual True Variables: " + countTrueVars(satSolver, anzahlPRNummern) + " Vars");
+        fileOutput.add("c Input number of vars : " + iD.numberOfVariables);
+        fileOutput.add("c Input Fam size: " + iD.minFamilySize + "-" + iD.maxFamilySize);
+        fileOutput.add("c Input Rule size: " + iD.minRuleSize + "-" + iD.maxRuleSize);
+        fileOutput.add("c Input False Variables: " + iD.falseVars);
+        fileOutput.add("c Actual False Variables: " + countFalseVars(satSolver, iD.numberOfVariables) + " Vars");
+        fileOutput.add("c Input True Variables: " + iD.trueVars);
+        fileOutput.add("c Actual True Variables: " + countTrueVars(satSolver, iD.numberOfVariables) + " Vars");
         fileOutput.add("c ");
-        fileOutput.add("p cnf " + anzahlPRNummern + " " + regeln.size());
-        for (int[] regel : regeln) {
+        fileOutput.add("p cnf " + iD.numberOfVariables + " " + rules.size());
+        for (int[] regel : rules) {
             fileOutput.add(Arrays.toString(regel).replace("[", "").replace("]", "").replace(",", "") + " 0");
         }
         for (String line : fileOutput) {
             System.out.println(line);
         }
-        TxtReaderWriter.writeListOfStrings("cnfBuilder" + anzahlPRNummern + "Vars" + "Variance" + varianz + ".txt", fileOutput);
+        TxtReaderWriter.writeListOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + varianz + ".txt", fileOutput);
 
 
     }
-
-    public static List<int[]> buildfamilyRules(int[] family) {
-        List<int[]> result = new ArrayList<>();
-        result.add(family);
-        for (int i = 0; i < family.length; i++) {
-            for (int j = i + 1; j < family.length; j++) {
-                result.add(new int[]{-family[i], -family[j]});
-            }
-        }
-        return result;
-    }
-
-    /*
-    public static boolean everyVarIsPossible(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        for (int i = 0; i < anzahlVariablen; i++) {
-            if (!satSolver.isSatisfiableWith(i + 1)) {
-                return false;
-            }
-        }
-        return true;
-    }
-     */
 
     public static int countFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
         int result = 0;
