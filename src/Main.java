@@ -16,17 +16,17 @@ public class Main {
         int triedTrueVars = 0;
         boolean machWeiter = true;
         while (machWeiter) {
-            if (triedTrueVars > 400){
+            if (triedTrueVars > 400) {
                 triedTrueVars = 0;
                 --iD.trueVars;
-                if (iD.trueVars < 0){
+                if (iD.trueVars < 0) {
                     iD.trueVars = 0;
                 }
             }
-            if (triedFalseVars > 400){
+            if (triedFalseVars > 400) {
                 triedFalseVars = 0;
                 --iD.falseVars;
-                if (iD.falseVars < 0){
+                if (iD.falseVars < 0) {
                     iD.falseVars = 0;
                 }
             }
@@ -35,15 +35,15 @@ public class Main {
             int[] neueRegel;
             if (iD.trueVars > countTrueVars(satSolver, iD.numberOfVariables)) {
                 ++triedTrueVars;
-                int[] possibleTrueVars = getPossibleTrueVars(satSolver,iD.numberOfVariables);
+                int[] possibleTrueVars = getPossibleTrueVars(satSolver, iD.numberOfVariables);
                 int index = rand.nextInt(possibleTrueVars.length);
                 neueRegel = new int[]{possibleTrueVars[index]};
-            } else if (iD.falseVars > countFalseVars(satSolver,iD.numberOfVariables)){
+            } else if (iD.falseVars > countFalseVars(satSolver, iD.numberOfVariables)) {
                 ++triedFalseVars;
-                int[] possibleFalseVars = getPossibleFalseVars(satSolver,iD.numberOfVariables);
+                int[] possibleFalseVars = getPossibleFalseVars(satSolver, iD.numberOfVariables);
                 int index = rand.nextInt(possibleFalseVars.length);
                 neueRegel = new int[]{-possibleFalseVars[index]};
-            }else {
+            } else {
                 int naechsteRegelSize = iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize);
                 neueRegel = new int[naechsteRegelSize];
                 for (int i = 0; i < naechsteRegelSize; i++) {
@@ -151,20 +151,20 @@ public class Main {
         return result;
     }
 
-    public static int[] getPossibleTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException{
+    public static int[] getPossibleTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
         List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++){
-            if (satSolver.isSatisfiableWith(var)){
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (satSolver.isSatisfiableWith(var)) {
                 result.add(var);
             }
         }
         return result.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    public static int[] getPossibleFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException{
+    public static int[] getPossibleFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
         List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++){
-            if (satSolver.isSatisfiableWith(-var)){
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (satSolver.isSatisfiableWith(-var)) {
                 result.add(var);
             }
         }
