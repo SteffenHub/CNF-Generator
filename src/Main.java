@@ -11,7 +11,7 @@ public class Main {
         List<int[]> rules = new ArrayList<>(iD.familyRules);
 
         Random rand = new Random();
-        BigInteger varianz = Operation.getVariance(rules, iD.numberOfVariables);
+        BigInteger varianz = iD.variance;
         SatSolver satSolver = new SatSolver(rules);
         int triedFalseVars = 0;
         int triedTrueVars = 0;
