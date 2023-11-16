@@ -5,6 +5,30 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class Main {
+
+    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars) throws TimeoutException {
+        int[] newRule;
+        Random rand = new Random();
+        if (iD.trueVars > countTrueVars(satSolver, iD.numberOfVariables)) {
+            ++triedFalseTrueVars[1];
+            int[] possibleTrueVars = getPossibleTrueVars(satSolver, iD.numberOfVariables);
+            int index = rand.nextInt(possibleTrueVars.length);
+            newRule = new int[]{possibleTrueVars[index]};
+        } else if (iD.falseVars > countFalseVars(satSolver, iD.numberOfVariables)) {
+            ++triedFalseTrueVars[0];
+            int[] possibleFalseVars = getPossibleFalseVars(satSolver, iD.numberOfVariables);
+            int index = rand.nextInt(possibleFalseVars.length);
+            newRule = new int[]{-possibleFalseVars[index]};
+        } else {
+            newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
+            for (int i = 0; i < newRule.length; i++) {
+                int neuePR = rand.nextInt(iD.numberOfVariables);
+                newRule[i] = -(neuePR + 1);
+            }
+        }
+        return newRule;
+    }
+
     public static void main(String[] args) throws Exception {
         InputData iD = new Dialog().startDialog();
         // All found Rules. Insert Family Rules
@@ -13,45 +37,26 @@ public class Main {
         Random rand = new Random();
         BigInteger varianz = iD.variance;
         SatSolver satSolver = new SatSolver(rules);
-        int triedFalseVars = 0;
-        int triedTrueVars = 0;
-        boolean machWeiter = true;
-        while (machWeiter) {
-            if (triedTrueVars > 400) {
-                triedTrueVars = 0;
+        int[] triedFalseTrueVars = new int[]{0,0};
+        boolean varianceReached = false;
+        while (!varianceReached) {
+            if (triedFalseTrueVars[1] >= 400) {
+                triedFalseTrueVars[1] = 0;
                 --iD.trueVars;
                 if (iD.trueVars < 0) {
                     iD.trueVars = 0;
                 }
             }
-            if (triedFalseVars > 400) {
-                triedFalseVars = 0;
+            if (triedFalseTrueVars[0] >= 400) {
+                triedFalseTrueVars[0] = 0;
                 --iD.falseVars;
                 if (iD.falseVars < 0) {
                     iD.falseVars = 0;
                 }
             }
             System.out.println("-----------------------------------------------------------------------------");
-            boolean wirdWiederGeloescht = false;
-            int[] neueRegel;
-            if (iD.trueVars > countTrueVars(satSolver, iD.numberOfVariables)) {
-                ++triedTrueVars;
-                int[] possibleTrueVars = getPossibleTrueVars(satSolver, iD.numberOfVariables);
-                int index = rand.nextInt(possibleTrueVars.length);
-                neueRegel = new int[]{possibleTrueVars[index]};
-            } else if (iD.falseVars > countFalseVars(satSolver, iD.numberOfVariables)) {
-                ++triedFalseVars;
-                int[] possibleFalseVars = getPossibleFalseVars(satSolver, iD.numberOfVariables);
-                int index = rand.nextInt(possibleFalseVars.length);
-                neueRegel = new int[]{-possibleFalseVars[index]};
-            } else {
-                int naechsteRegelSize = iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize);
-                neueRegel = new int[naechsteRegelSize];
-                for (int i = 0; i < naechsteRegelSize; i++) {
-                    int neuePR = rand.nextInt(iD.numberOfVariables);
-                    neueRegel[i] = -(neuePR + 1);
-                }
-            }
+            int[] neueRegel = getNextRule(satSolver, iD, triedFalseTrueVars);
+
             System.out.println("Fuege Regel hinzu: " + Arrays.toString(neueRegel));
             rules.add(neueRegel);
 
@@ -95,7 +100,7 @@ public class Main {
             // If an optimal Variance is reached -> Stop calculation
             if (varianz.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) > 0 && varianz.compareTo(iD.goalVariance.add(iD.goalVarianceDeviation)) < 0) {
                 System.out.println("Ich habe ein Regelwerk gefunden, dass die Varianz erfüllt");
-                machWeiter = false;
+                varianceReached = true;
             }
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
             System.out.println();
