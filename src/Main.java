@@ -1,3 +1,4 @@
+import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
 import java.math.BigInteger;
@@ -5,13 +6,21 @@ import java.util.*;
 
 public class Main {
 
-    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars) throws TimeoutException {
+    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars, int breakTries) throws TimeoutException {
         Random rand = new Random();
         int[] trueVars = getTrueVars(satSolver, iD.numberOfVariables);
         if (iD.trueVars > trueVars.length) {
             ++triedFalseTrueVars[1];
             int[] possibleTrueVars = getPossibleTrueVars(satSolver, iD.numberOfVariables);
             int index = rand.nextInt(possibleTrueVars.length);
+            // TODO If the last rules is chosen iD.trueVars will be too small in output cnf
+            if (triedFalseTrueVars[1] >= breakTries) {
+                triedFalseTrueVars[1] = 0;
+                --iD.trueVars;
+                if (iD.trueVars < 0) {
+                    iD.trueVars = 0;
+                }
+            }
             return new int[]{possibleTrueVars[index]};
         }
         int[] falseVars = getFalseVars(satSolver, iD.numberOfVariables);
@@ -19,6 +28,14 @@ public class Main {
             ++triedFalseTrueVars[0];
             int[] possibleFalseVars = getPossibleFalseVars(satSolver, iD.numberOfVariables);
             int index = rand.nextInt(possibleFalseVars.length);
+            // TODO If the last rules is chosen iD.falseVars will be too small in output cnf
+            if (triedFalseTrueVars[0] >= breakTries) {
+                triedFalseTrueVars[0] = 0;
+                --iD.falseVars;
+                if (iD.falseVars < 0) {
+                    iD.falseVars = 0;
+                }
+            }
             return new int[]{-possibleFalseVars[index]};
         } else {
             int[] newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
@@ -33,9 +50,9 @@ public class Main {
         }
     }
 
-    public static boolean isIn(int[] list, int var){
+    public static boolean isIn(int[] list, int var) {
         for (int listVar : list) {
-            if (listVar == var){
+            if (listVar == var) {
                 return true;
             }
         }
@@ -50,45 +67,19 @@ public class Main {
         BigInteger variance = iD.variance;
         SatSolver satSolver = new SatSolver(rules);
         int[] triedFalseTrueVars = new int[]{0, 0};
+
         boolean varianceReached = false;
         while (!varianceReached) {
-            if (triedFalseTrueVars[1] >= 400) {
-                triedFalseTrueVars[1] = 0;
-                --iD.trueVars;
-                if (iD.trueVars < 0) {
-                    iD.trueVars = 0;
-                }
-            }
-            if (triedFalseTrueVars[0] >= 400) {
-                triedFalseTrueVars[0] = 0;
-                --iD.falseVars;
-                if (iD.falseVars < 0) {
-                    iD.falseVars = 0;
-                }
-            }
             System.out.println("-----------------------------------------------------------------------------");
-            int[] nextRule = getNextRule(satSolver, iD, triedFalseTrueVars);
+            int[] nextRule = getNextRule(satSolver, iD, triedFalseTrueVars, 400);
 
             System.out.println("Add next Rule to Solver: " + Arrays.toString(nextRule));
             rules.add(nextRule);
 
-            if (!satSolver.isSatisfiableWithClause(nextRule)) {
-                System.err.println("This rule creates a contradiction, I'll take it out again");
-                rules.remove(nextRule);
-                continue;
-            }
-            satSolver.addRule(nextRule);
-
-            int falseVarsNow = getFalseVars(satSolver, iD.numberOfVariables).length;
-            if (!(falseVarsNow <= iD.falseVars)) {
-                System.err.println("This rule would exclude too many variables and make it no longer possible to select them: " + falseVarsNow + "/" + iD.falseVars);
-                rules.remove(nextRule);
-                satSolver = new SatSolver(rules);
-                continue;
-            }
-            int trueVarsNow = getTrueVars(satSolver, iD.numberOfVariables).length;
-            if (!(trueVarsNow <= iD.trueVars)) {
-                System.err.println("This rule would make too many variables always true and force the selection of this variable: " + trueVarsNow + "/" + iD.trueVars);
+            // satSolver checks
+            if (!handleIsSatifiableWithRuleAndAddRuleToSatSolver(satSolver, nextRule) ||
+                    !handleFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
+                    !handleTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
                 rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
@@ -117,19 +108,52 @@ public class Main {
                 varianceReached = true;
             }
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
-            System.out.println();
-            System.out.println("We take these!");
-            System.out.println();
+            System.out.println("\nWe take these!\n");
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
-            System.out.println("-----------------------------------------------------------------------------");
         }
 
+        // save to file
         List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, getFalseVars(satSolver,
                 iD.numberOfVariables).length, getTrueVars(satSolver, iD.numberOfVariables).length);
         for (String line : fileOutput) {
             System.out.println(line);
         }
         TxtReaderWriter.writeListOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + variance + ".txt", fileOutput);
+    }
+
+    /**
+     * Own function to add the rule, because we habe to catch a contradiction exception
+     */
+    public static boolean handleIsSatifiableWithRuleAndAddRuleToSatSolver(SatSolver satSolver, int[] nextRule) throws TimeoutException {
+        if (!satSolver.isSatisfiableWithClause(nextRule)) {
+            System.err.println("This rule creates a contradiction, I'll take it out again");
+            return false;
+        }
+        try {
+            satSolver.addRule(nextRule);
+        } catch (ContradictionException e) {
+            // should not happen, because we check before with isSatisfiableWithClause()
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean handleFalseVars(SatSolver satSolver, int numberOfVariables, int goalFalseVars) throws TimeoutException {
+        int falseVarsNow = getFalseVars(satSolver, numberOfVariables).length;
+        if (!(falseVarsNow <= goalFalseVars)) {
+            System.err.println("This rule would exclude too many variables and make it no longer possible to select them: " + falseVarsNow + "/" + goalFalseVars);
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean handleTrueVars(SatSolver satSolver, int numberOfVariables, int goalTrueVars) throws TimeoutException {
+        int trueVarsNow = getTrueVars(satSolver, numberOfVariables).length;
+        if (!(trueVarsNow <= goalTrueVars)) {
+            System.err.println("This rule would make too many variables always true and force the selection of this variable: " + trueVarsNow + "/" + goalTrueVars);
+            return false;
+        }
+        return true;
     }
 
     public static BigInteger getVariance(List<int[]> allRules, int numberOfVariables) {
