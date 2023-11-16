@@ -6,27 +6,40 @@ import java.util.*;
 public class Main {
 
     public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars) throws TimeoutException {
-        int[] newRule;
         Random rand = new Random();
-        if (iD.trueVars > countTrueVars(satSolver, iD.numberOfVariables)) {
+        int[] trueVars = getTrueVars(satSolver, iD.numberOfVariables);
+        if (iD.trueVars > trueVars.length) {
             ++triedFalseTrueVars[1];
             int[] possibleTrueVars = getPossibleTrueVars(satSolver, iD.numberOfVariables);
             int index = rand.nextInt(possibleTrueVars.length);
-            newRule = new int[]{possibleTrueVars[index]};
-        } else if (iD.falseVars > countFalseVars(satSolver, iD.numberOfVariables)) {
+            return new int[]{possibleTrueVars[index]};
+        }
+        int[] falseVars = getFalseVars(satSolver, iD.numberOfVariables);
+        if (iD.falseVars > falseVars.length) {
             ++triedFalseTrueVars[0];
             int[] possibleFalseVars = getPossibleFalseVars(satSolver, iD.numberOfVariables);
             int index = rand.nextInt(possibleFalseVars.length);
-            newRule = new int[]{-possibleFalseVars[index]};
+            return new int[]{-possibleFalseVars[index]};
         } else {
-            // TODO don't use already determined True False Vars
-            newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
+            int[] newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
             for (int i = 0; i < newRule.length; i++) {
-                int neuePR = rand.nextInt(iD.numberOfVariables);
-                newRule[i] = -(neuePR + 1);
+                int newVar = -1;
+                while (newVar == -1 || isIn(falseVars, newVar) || isIn(trueVars, newVar)) {
+                    newVar = rand.nextInt(iD.numberOfVariables);
+                }
+                newRule[i] = -(newVar + 1);
+            }
+            return newRule;
+        }
+    }
+
+    public static boolean isIn(int[] list, int var){
+        for (int listVar : list) {
+            if (listVar == var){
+                return true;
             }
         }
-        return newRule;
+        return false;
     }
 
     public static void main(String[] args) throws Exception {
@@ -66,16 +79,16 @@ public class Main {
             }
             satSolver.addRule(nextRule);
 
-            int falseVarsNow = countFalseVars(satSolver, iD.numberOfVariables);
+            int falseVarsNow = getFalseVars(satSolver, iD.numberOfVariables).length;
             if (!(falseVarsNow <= iD.falseVars)) {
                 System.err.println("This rule would exclude too many variables and make it no longer possible to select them: " + falseVarsNow + "/" + iD.falseVars);
                 rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
             }
-            int trueBisJetzt = countTrueVars(satSolver, iD.numberOfVariables);
-            if (!(trueBisJetzt <= iD.trueVars)) {
-                System.err.println("This rule would make too many variables always true and force the selection of this variable: " + trueBisJetzt + "/" + iD.trueVars);
+            int trueVarsNow = getTrueVars(satSolver, iD.numberOfVariables).length;
+            if (!(trueVarsNow <= iD.trueVars)) {
+                System.err.println("This rule would make too many variables always true and force the selection of this variable: " + trueVarsNow + "/" + iD.trueVars);
                 rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
@@ -111,8 +124,8 @@ public class Main {
             System.out.println("-----------------------------------------------------------------------------");
         }
 
-        List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, countFalseVars(satSolver,
-                iD.numberOfVariables), countTrueVars(satSolver, iD.numberOfVariables));
+        List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, getFalseVars(satSolver,
+                iD.numberOfVariables).length, getTrueVars(satSolver, iD.numberOfVariables).length);
         for (String line : fileOutput) {
             System.out.println(line);
         }
@@ -127,26 +140,26 @@ public class Main {
         }
     }
 
-    public static int countFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        int result = 0;
-        for (int i = 0; i < anzahlVariablen; i++) {
-            if (!satSolver.isSatisfiableWith(i + 1) && satSolver.isSatisfiableWith(-(i + 1))) {
-                //immer false
-                ++result;
+    public static int[] getFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+        List<Integer> result = new ArrayList<>();
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (!satSolver.isSatisfiableWith(var) && satSolver.isSatisfiableWith(-var)) {
+                // always false
+                result.add(var);
             }
         }
-        return result;
+        return result.stream().mapToInt(i -> i).toArray();
     }
 
-    public static int countTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        int result = 0;
-        for (int i = 0; i < anzahlVariablen; i++) {
-            if (!satSolver.isSatisfiableWith(-(i + 1)) && satSolver.isSatisfiableWith(i + 1)) {
-                // immer true
-                ++result;
+    public static int[] getTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+        List<Integer> result = new ArrayList<>();
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (!satSolver.isSatisfiableWith(-var) && satSolver.isSatisfiableWith(var)) {
+                // always true
+                result.add(var);
             }
         }
-        return result;
+        return result.stream().mapToInt(i -> i).toArray();
     }
 
     public static int[] getPossibleTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
