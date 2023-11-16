@@ -2,3 +2,5 @@
 *.cnf
 *.nnf
 /out/
+/CNF-Generator.iml
+/c2d.exe
