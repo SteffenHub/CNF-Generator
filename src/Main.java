@@ -1,4 +1,3 @@
-import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
 import java.math.BigInteger;
@@ -34,7 +33,6 @@ public class Main {
         // All found Rules. Insert Family Rules
         List<int[]> rules = new ArrayList<>(iD.familyRules);
 
-        Random rand = new Random();
         BigInteger varianz = iD.variance;
         SatSolver satSolver = new SatSolver(rules);
         int[] triedFalseTrueVars = new int[]{0,0};
@@ -57,13 +55,12 @@ public class Main {
             System.out.println("-----------------------------------------------------------------------------");
             int[] neueRegel = getNextRule(satSolver, iD, triedFalseTrueVars);
 
-            System.out.println("Fuege Regel hinzu: " + Arrays.toString(neueRegel));
+            System.out.println("Add next Rule to Solver: " + Arrays.toString(neueRegel));
             rules.add(neueRegel);
 
-            if (!checkForSatisfibiltiy(satSolver, neueRegel)) {
-                System.err.println("Diese Regel erzeugt eine Kontradiktion, ich nehme sie wieder raus");
+            if (!satSolver.isSatisfiableWithClause(neueRegel)){
+                System.err.println("This rule creates a contradiction, I'll take it out again");
                 rules.remove(neueRegel);
-                satSolver = new SatSolver(rules);
                 continue;
             }
 
@@ -123,22 +120,6 @@ public class Main {
             return Operation.getVariance(allRules, numberOfVariables);
         } catch (Exception e) {
             return new BigInteger("-1");
-        }
-    }
-
-    /**
-     * Tries to add the new Rule to the SatSolver
-     *
-     * @param satSolver The SatSolver filled with all previous rules
-     * @param newRule   The new Rule that should be testet
-     * @return true if rule is added and satisfiable. False if adding Rule ends in a Contradiction
-     */
-    public static boolean checkForSatisfibiltiy(SatSolver satSolver, int[] newRule) {
-        try {
-            satSolver.addRule(newRule);
-            return true;
-        } catch (ContradictionException e) {
-            return false;
         }
     }
 
