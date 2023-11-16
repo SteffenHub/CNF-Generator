@@ -19,6 +19,7 @@ public class Main {
             int index = rand.nextInt(possibleFalseVars.length);
             newRule = new int[]{-possibleFalseVars[index]};
         } else {
+            // TODO don't use already determined True False Vars
             newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
             for (int i = 0; i < newRule.length; i++) {
                 int neuePR = rand.nextInt(iD.numberOfVariables);
@@ -33,9 +34,9 @@ public class Main {
         // All found Rules. Insert Family Rules
         List<int[]> rules = new ArrayList<>(iD.familyRules);
 
-        BigInteger varianz = iD.variance;
+        BigInteger variance = iD.variance;
         SatSolver satSolver = new SatSolver(rules);
-        int[] triedFalseTrueVars = new int[]{0,0};
+        int[] triedFalseTrueVars = new int[]{0, 0};
         boolean varianceReached = false;
         while (!varianceReached) {
             if (triedFalseTrueVars[1] >= 400) {
@@ -53,66 +54,69 @@ public class Main {
                 }
             }
             System.out.println("-----------------------------------------------------------------------------");
-            int[] neueRegel = getNextRule(satSolver, iD, triedFalseTrueVars);
+            int[] nextRule = getNextRule(satSolver, iD, triedFalseTrueVars);
 
-            System.out.println("Add next Rule to Solver: " + Arrays.toString(neueRegel));
-            rules.add(neueRegel);
+            System.out.println("Add next Rule to Solver: " + Arrays.toString(nextRule));
+            rules.add(nextRule);
 
-            if (!satSolver.isSatisfiableWithClause(neueRegel)){
+            if (!satSolver.isSatisfiableWithClause(nextRule)) {
                 System.err.println("This rule creates a contradiction, I'll take it out again");
-                rules.remove(neueRegel);
+                rules.remove(nextRule);
                 continue;
             }
+            satSolver.addRule(nextRule);
 
-            int falseVarsBisJetzt = countFalseVars(satSolver, iD.numberOfVariables);
-            if (!(falseVarsBisJetzt <= iD.falseVars)) {
-                System.err.println("Diese Regel würde zu viele variablen ausschließen und nicht mehr möglich machen diese zu wählen: " + falseVarsBisJetzt + "/" + iD.falseVars);
-                rules.remove(neueRegel);
+            int falseVarsNow = countFalseVars(satSolver, iD.numberOfVariables);
+            if (!(falseVarsNow <= iD.falseVars)) {
+                System.err.println("This rule would exclude too many variables and make it no longer possible to select them: " + falseVarsNow + "/" + iD.falseVars);
+                rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
             }
             int trueBisJetzt = countTrueVars(satSolver, iD.numberOfVariables);
             if (!(trueBisJetzt <= iD.trueVars)) {
-                System.err.println("Diese Regel würde zu viele variablen immer wahr machen: " + trueBisJetzt + "/" + iD.trueVars);
-                rules.remove(neueRegel);
+                System.err.println("This rule would make too many variables always true and force the selection of this variable: " + trueBisJetzt + "/" + iD.trueVars);
+                rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
             }
-            varianz = getVariance(rules, iD.numberOfVariables);
-            if (varianz.compareTo(new BigInteger("-1")) == 0) {
+
+            variance = getVariance(rules, iD.numberOfVariables);
+            if (variance.compareTo(new BigInteger("-1")) == 0) {
                 System.err.println("Something went wrong with c2d when finding the variance. I am taking this rule out again");
-                rules.remove(neueRegel);
+                rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
             }
-            System.out.println("The variance with the rules is now: " + Operation.punkteInBigInt(varianz));
-            System.out.println("Still missing: " + Operation.punkteInBigInt(varianz.subtract(iD.goalVariance)));
+            System.out.println("The variance with the new rule is now: " + Operation.pointsToBigInt(variance));
+            System.out.println("Still missing: " + Operation.pointsToBigInt(variance.subtract(iD.goalVariance)));
+
             // If the variance is too small
-            if (varianz.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
-                System.err.println("das drückt die Varianz zu doll ich nehme die Regel wieder raus");
-                rules.remove(neueRegel);
+            if (variance.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
+                System.err.println("that pushes the variance too hard I take the rule out again");
+                rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
             }
             // If an optimal Variance is reached -> Stop calculation
-            if (varianz.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) > 0 && varianz.compareTo(iD.goalVariance.add(iD.goalVarianceDeviation)) < 0) {
-                System.out.println("Ich habe ein Regelwerk gefunden, dass die Varianz erfüllt");
+            if (variance.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) > 0 && variance.compareTo(iD.goalVariance.add(iD.goalVarianceDeviation)) < 0) {
+                System.out.println("I have found a set of rules that fulfills the variance");
                 varianceReached = true;
             }
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
             System.out.println();
-            System.out.println("Die nehmen wir");
+            System.out.println("We take these!");
             System.out.println();
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
             System.out.println("-----------------------------------------------------------------------------");
         }
 
-        List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, varianz, countFalseVars(satSolver,
+        List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, countFalseVars(satSolver,
                 iD.numberOfVariables), countTrueVars(satSolver, iD.numberOfVariables));
         for (String line : fileOutput) {
             System.out.println(line);
         }
-        TxtReaderWriter.writeListOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + varianz + ".txt", fileOutput);
+        TxtReaderWriter.writeListOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + variance + ".txt", fileOutput);
     }
 
     public static BigInteger getVariance(List<int[]> allRules, int numberOfVariables) {

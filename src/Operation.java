@@ -58,7 +58,7 @@ public class Operation {
         }
     }
 
-    public static String punkteInBigInt(BigInteger number) {
+    public static String pointsToBigInt(BigInteger number) {
         // Konvertiere das BigInteger in eine String-Repräsentation
         String numberString = number.toString();
 
