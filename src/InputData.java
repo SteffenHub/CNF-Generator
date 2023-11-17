@@ -13,4 +13,5 @@ public class InputData {
     public int maxRuleSize;
     public int falseVars;
     public int trueVars;
+    public boolean useFamilies;
 }
