@@ -6,7 +6,7 @@ public class Dialog {
     private Scanner scanner;
 
 
-    public InputData startDialog() throws Exception {
+    public InputData startDialog(){
         this.scanner = new Scanner(System.in);
         InputData iD = new InputData();
         iD.numberOfVariables = this.askHowManyVariables();
@@ -14,7 +14,7 @@ public class Dialog {
         iD.minFamilySize = familySize[0];
         iD.maxFamilySize = familySize[1];
         iD.familyRules = this.generateAndPrintFamilyRules(iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
-        iD.variance = this.getAndPrintFamilyVariance(iD.familyRules, iD.numberOfVariables);
+        iD.variance = this.getAndPrintFamilyVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
         BigInteger[] goalVarianceAndDeviation = this.askForGoalVariance();
         iD.goalVariance = goalVarianceAndDeviation[0];
         iD.goalVarianceDeviation = goalVarianceAndDeviation[1];
@@ -78,12 +78,18 @@ public class Dialog {
         return result;
     }
 
-    private BigInteger getAndPrintFamilyVariance(List<int[]> familyRules, int numberOfVariables) throws Exception {
-        BigInteger variance = Operation.getVariance(familyRules, numberOfVariables);
-        System.out.println("Only the family rules result in a variance of: " + variance);
-        System.out.println("respectively");
-        System.out.println(Operation.pointsToBigInt(variance));
-        return variance;
+    private BigInteger getAndPrintFamilyVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize){
+        try {
+            BigInteger variance = Operation.getVariance(familyRules, numberOfVariables);
+            System.out.println("Only the family rules result in a variance of: " + variance);
+            System.out.println("respectively");
+            System.out.println(Operation.pointsToBigInt(variance));
+            return variance;
+        }catch(Exception e){
+            System.err.println("failed to find variance. Build new familyRules");
+            familyRules = generateAndPrintFamilyRules(numberOfVariables, minFamilySize, maxFamilySize);
+            return getAndPrintFamilyVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize);
+        }
     }
 
     private BigInteger[] askForGoalVariance(){
