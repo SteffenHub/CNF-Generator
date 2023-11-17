@@ -98,9 +98,22 @@ public class SolverUsages {
         return equalVars.toArray(new int[0][]);
     }
 
-    public static int[] getAlwaysFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+    /**
+     * Determines the variables that are always false in a given SAT (Boolean satisfiability problem) instance.
+     * This method iterates over all variables from 1 to 'numberOfVariables'. For each variable, it checks if
+     * the SAT problem is unsatisfiable when the variable is true and satisfiable when the variable is false.
+     * If both conditions are met, the variable is deemed to be always false.
+     *
+     * @param satSolver An instance of SatSolver, which is used to check the satisfiability of the problem.
+     * @param numberOfVariables The number of variables in the SAT problem. This method will check each variable
+     *                        from 1 to this number.
+     * @return An array of integers, where each integer represents a variable that is always false in the
+     *         given SAT problem.
+     * @throws TimeoutException If the satisfiability check takes too long.
+     */
+    public static int[] getAlwaysFalseVars(SatSolver satSolver, int numberOfVariables) throws TimeoutException {
         List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
+        for (int var = 1; var <= numberOfVariables; var++) {
             if (!satSolver.isSatisfiableWith(var) && satSolver.isSatisfiableWith(-var)) {
                 // always false
                 result.add(var);
@@ -109,9 +122,22 @@ public class SolverUsages {
         return result.stream().mapToInt(i -> i).toArray();
     }
 
-    public static int[] getAlwaysTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+    /**
+     * Determines the variables that are always true in a given SAT (Boolean satisfiability problem) instance.
+     * This method iterates over all variables from 1 to 'numberOfVariables'. For each variable, it checks if
+     * the SAT problem is unsatisfiable when the variable is false and satisfiable when the variable is true.
+     * If both conditions are met, the variable is deemed to be always true.
+     *
+     * @param satSolver An instance of SatSolver, which is used to check the satisfiability of the problem.
+     * @param numberOfVariables The number of variables in the SAT problem. This method will check each variable
+     *                        from 1 to this number.
+     * @return An array of integers, where each integer represents a variable that is always true in the
+     *         given SAT problem.
+     * @throws TimeoutException If the satisfiability check takes too long.
+     */
+    public static int[] getAlwaysTrueVars(SatSolver satSolver, int numberOfVariables) throws TimeoutException {
         List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
+        for (int var = 1; var <= numberOfVariables; var++) {
             if (!satSolver.isSatisfiableWith(-var) && satSolver.isSatisfiableWith(var)) {
                 // always true
                 result.add(var);
@@ -120,9 +146,23 @@ public class SolverUsages {
         return result.stream().mapToInt(i -> i).toArray();
     }
 
-    public static int[] getVarsCouldBeTrue(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+    /**
+     * Identifies variables that could be true in a given SAT instance.
+     * This method iterates through each variable from 1 to 'numberOfVariables'.
+     * It checks if the SAT problem remains satisfiable when each variable is set to true. If so, the variable
+     * is considered as one that could be true and is added to the result list.
+     *
+     * @param satSolver An instance of SatSolver, which is used to evaluate the satisfiability of the problem
+     *                  with specific variable assignments.
+     * @param numberOfVariables The total number of variables in the SAT problem. This method evaluates each
+     *                          variable from 1 to this number to determine if it could be true.
+     * @return An array of integers, each representing a variable that could be true in the SAT problem. The
+     *         variables are identified by their respective integer representations.
+     * @throws TimeoutException If the satisfiability check takes too long.
+     */
+    public static int[] getVarsCouldBeTrue(SatSolver satSolver, int numberOfVariables) throws TimeoutException {
         List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
+        for (int var = 1; var <= numberOfVariables; var++) {
             if (satSolver.isSatisfiableWith(var)) {
                 result.add(var);
             }
@@ -130,9 +170,24 @@ public class SolverUsages {
         return result.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    public static int[] getVarsCouldBeFalse(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+    /**
+     * Identifies variables that could be false in a given SAT (Boolean satisfiability problem) instance.
+     * This method iterates through each variable from 1 to 'numberOfVariables'.
+     * It checks if the SAT problem remains satisfiable when each variable is set to false (negated). If the problem
+     * is still satisfiable with the variable negated, it indicates that the variable could potentially be false
+     * and is added to the result list.
+     *
+     * @param satSolver An instance of SatSolver, which is used to evaluate the satisfiability of the problem
+     *                  with specific variable assignments (negated in this case).
+     * @param numberOfVariables The total number of variables in the SAT problem. This method evaluates each
+     *                          variable from 1 to this number to determine if it could be false.
+     * @return An array of integers, each representing a variable that could be false in the SAT problem. The
+     *         variables are identified by their respective integer representations.
+     * @throws TimeoutException If the satisfiability check takes too long.
+     */
+    public static int[] getVarsCouldBeFalse(SatSolver satSolver, int numberOfVariables) throws TimeoutException {
         List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
+        for (int var = 1; var <= numberOfVariables; var++) {
             if (satSolver.isSatisfiableWith(-var)) {
                 result.add(var);
             }
