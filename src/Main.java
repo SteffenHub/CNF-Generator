@@ -31,14 +31,20 @@ public class Main {
             rules.add(nextRule);
 
             // satSolver checks
-            if (!handleIsSatisfiableWithRuleAndAddRuleToSatSolver(satSolver, nextRule) ||
-                    !handleAlwaysFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
-                    !handleAlwaysTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
+            try {
+                if (!handleIsSatisfiableWithRuleAndAddRuleToSatSolver(satSolver, nextRule) ||
+                        !handleAlwaysFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
+                        !handleAlwaysTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
+                    rules.remove(nextRule);
+                    satSolver = new SatSolver(rules);
+                    continue;
+                }
+            }catch(TimeoutException e){
+                System.err.println("Sat Solver calculation failed. Timeout. I am taking this rule out again");
                 rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
             }
-            // TODO catch timeout
 
             variance = getVariance(rules, iD.numberOfVariables);
             if (variance.compareTo(new BigInteger("-1")) == 0) {
