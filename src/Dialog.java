@@ -82,7 +82,7 @@ public class Dialog {
         BigInteger variance = Operation.getVariance(familyRules, numberOfVariables);
         System.out.println("Only the family rules result in a variance of: " + variance);
         System.out.println("respectively");
-        System.out.println(Operation.punkteInBigInt(variance));
+        System.out.println(Operation.pointsToBigInt(variance));
         return variance;
     }
 
