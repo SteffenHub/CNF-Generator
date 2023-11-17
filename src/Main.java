@@ -1,6 +1,7 @@
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -13,7 +14,7 @@ public class Main {
      * including the number of always true/false variables and the target variance. If a rule does not meet the
      * criteria, it is discarded, and a new rule is tried. The process continues until the target variance is achieved.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws ContradictionException, IOException, TimeoutException {
         InputData iD = new Dialog().startDialog();
         // All found Rules. Insert Family Rules
         List<int[]> rules = new ArrayList<>(iD.familyRules);
@@ -25,10 +26,17 @@ public class Main {
         boolean varianceReached = false;
         while (!varianceReached) {
             System.out.println("-----------------------------------------------------------------------------");
-            int[] nextRule = getNextRule(satSolver, iD, triedFalseTrueVars, 400);
+            int[] nextRule;
+            try {
+                nextRule = getNextRule(satSolver, iD, triedFalseTrueVars, 400);
+            }catch(TimeoutException e){
+                System.err.println("Error during find next potential rule.");
+                continue;
+            }
 
             System.out.println("Add next Rule to Solver: " + Arrays.toString(nextRule));
             rules.add(nextRule);
+            satSolver = new SatSolver(rules);
 
             // satSolver checks
             try {
@@ -36,13 +44,11 @@ public class Main {
                         !handleAlwaysFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
                         !handleAlwaysTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
                     rules.remove(nextRule);
-                    satSolver = new SatSolver(rules);
                     continue;
                 }
             }catch(TimeoutException e){
                 System.err.println("Sat Solver calculation failed. Timeout. I am taking this rule out again");
                 rules.remove(nextRule);
-                satSolver = new SatSolver(rules);
                 continue;
             }
 
@@ -50,7 +56,6 @@ public class Main {
             if (variance.compareTo(new BigInteger("-1")) == 0) {
                 System.err.println("Something went wrong with c2d when finding the variance. I am taking this rule out again");
                 rules.remove(nextRule);
-                satSolver = new SatSolver(rules);
                 continue;
             }
             System.out.println("The variance with the new rule is now: " + Operation.pointsToBigInt(variance));
@@ -60,7 +65,6 @@ public class Main {
             if (variance.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
                 System.err.println("that pushes the variance too hard I take the rule out again");
                 rules.remove(nextRule);
-                satSolver = new SatSolver(rules);
                 continue;
             }
             // If an optimal Variance is reached -> Stop calculation
