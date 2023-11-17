@@ -94,4 +94,13 @@ public class Operation {
 
         return resultBigInteger;
     }
+
+    public static boolean isIn(int[] list, int var) {
+        for (int listVar : list) {
+            if (listVar == var) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

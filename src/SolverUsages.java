@@ -97,4 +97,46 @@ public class SolverUsages {
         }
         return equalVars.toArray(new int[0][]);
     }
+
+    public static int[] getAlwaysFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+        List<Integer> result = new ArrayList<>();
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (!satSolver.isSatisfiableWith(var) && satSolver.isSatisfiableWith(-var)) {
+                // always false
+                result.add(var);
+            }
+        }
+        return result.stream().mapToInt(i -> i).toArray();
+    }
+
+    public static int[] getAlwaysTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+        List<Integer> result = new ArrayList<>();
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (!satSolver.isSatisfiableWith(-var) && satSolver.isSatisfiableWith(var)) {
+                // always true
+                result.add(var);
+            }
+        }
+        return result.stream().mapToInt(i -> i).toArray();
+    }
+
+    public static int[] getVarsCouldBeTrue(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+        List<Integer> result = new ArrayList<>();
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (satSolver.isSatisfiableWith(var)) {
+                result.add(var);
+            }
+        }
+        return result.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    public static int[] getVarsCouldBeFalse(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
+        List<Integer> result = new ArrayList<>();
+        for (int var = 1; var <= anzahlVariablen; var++) {
+            if (satSolver.isSatisfiableWith(-var)) {
+                result.add(var);
+            }
+        }
+        return result.stream().mapToInt(Integer::intValue).toArray();
+    }
 }

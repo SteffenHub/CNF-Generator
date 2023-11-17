@@ -5,60 +5,6 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class Main {
-
-    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars, int breakTries) throws TimeoutException {
-        Random rand = new Random();
-        int[] trueVars = getTrueVars(satSolver, iD.numberOfVariables);
-        if (iD.trueVars > trueVars.length) {
-            ++triedFalseTrueVars[1];
-            int[] possibleTrueVars = getPossibleTrueVars(satSolver, iD.numberOfVariables);
-            int index = rand.nextInt(possibleTrueVars.length);
-            // TODO If the last rules is chosen iD.trueVars will be too small in output cnf
-            if (triedFalseTrueVars[1] >= breakTries) {
-                triedFalseTrueVars[1] = 0;
-                --iD.trueVars;
-                if (iD.trueVars < 0) {
-                    iD.trueVars = 0;
-                }
-            }
-            return new int[]{possibleTrueVars[index]};
-        }
-        int[] falseVars = getFalseVars(satSolver, iD.numberOfVariables);
-        if (iD.falseVars > falseVars.length) {
-            ++triedFalseTrueVars[0];
-            int[] possibleFalseVars = getPossibleFalseVars(satSolver, iD.numberOfVariables);
-            int index = rand.nextInt(possibleFalseVars.length);
-            // TODO If the last rules is chosen iD.falseVars will be too small in output cnf
-            if (triedFalseTrueVars[0] >= breakTries) {
-                triedFalseTrueVars[0] = 0;
-                --iD.falseVars;
-                if (iD.falseVars < 0) {
-                    iD.falseVars = 0;
-                }
-            }
-            return new int[]{-possibleFalseVars[index]};
-        } else {
-            int[] newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
-            for (int i = 0; i < newRule.length; i++) {
-                int newVar = -1;
-                while (newVar == -1 || isIn(falseVars, newVar) || isIn(trueVars, newVar)) {
-                    newVar = rand.nextInt(iD.numberOfVariables);
-                }
-                newRule[i] = -(newVar + 1);
-            }
-            return newRule;
-        }
-    }
-
-    public static boolean isIn(int[] list, int var) {
-        for (int listVar : list) {
-            if (listVar == var) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static void main(String[] args) throws Exception {
         InputData iD = new Dialog().startDialog();
         // All found Rules. Insert Family Rules
@@ -78,8 +24,8 @@ public class Main {
 
             // satSolver checks
             if (!handleIsSatifiableWithRuleAndAddRuleToSatSolver(satSolver, nextRule) ||
-                    !handleFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
-                    !handleTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
+                    !handleAlwaysFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
+                    !handleAlwaysTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
                 rules.remove(nextRule);
                 satSolver = new SatSolver(rules);
                 continue;
@@ -113,12 +59,56 @@ public class Main {
         }
 
         // save to file
-        List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, getFalseVars(satSolver,
-                iD.numberOfVariables).length, getTrueVars(satSolver, iD.numberOfVariables).length);
+        List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, SolverUsages.getAlwaysFalseVars(satSolver,
+                iD.numberOfVariables).length, SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables).length);
         for (String line : fileOutput) {
             System.out.println(line);
         }
         TxtReaderWriter.writeListOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + variance + ".txt", fileOutput);
+    }
+
+    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars, int breakTries) throws TimeoutException {
+        Random rand = new Random();
+        int[] trueVars = SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables);
+        if (iD.trueVars > trueVars.length) {
+            ++triedFalseTrueVars[1];
+            int[] possibleTrueVars = SolverUsages.getVarsCouldBeTrue(satSolver, iD.numberOfVariables);
+            int index = rand.nextInt(possibleTrueVars.length);
+            // TODO If the last rules is chosen iD.trueVars will be too small in output cnf
+            if (triedFalseTrueVars[1] >= breakTries) {
+                triedFalseTrueVars[1] = 0;
+                --iD.trueVars;
+                if (iD.trueVars < 0) {
+                    iD.trueVars = 0;
+                }
+            }
+            return new int[]{possibleTrueVars[index]};
+        }
+        int[] falseVars = SolverUsages.getAlwaysFalseVars(satSolver, iD.numberOfVariables);
+        if (iD.falseVars > falseVars.length) {
+            ++triedFalseTrueVars[0];
+            int[] possibleFalseVars = SolverUsages.getVarsCouldBeFalse(satSolver, iD.numberOfVariables);
+            int index = rand.nextInt(possibleFalseVars.length);
+            // TODO If the last rules is chosen iD.falseVars will be too small in output cnf
+            if (triedFalseTrueVars[0] >= breakTries) {
+                triedFalseTrueVars[0] = 0;
+                --iD.falseVars;
+                if (iD.falseVars < 0) {
+                    iD.falseVars = 0;
+                }
+            }
+            return new int[]{-possibleFalseVars[index]};
+        } else {
+            int[] newRule = new int[iD.minRuleSize + rand.nextInt(iD.maxRuleSize + 1 - iD.minRuleSize)];
+            for (int i = 0; i < newRule.length; i++) {
+                int newVar = -1;
+                while (newVar == -1 || Operation.isIn(falseVars, newVar) || Operation.isIn(trueVars, newVar)) {
+                    newVar = rand.nextInt(iD.numberOfVariables);
+                }
+                newRule[i] = -(newVar + 1);
+            }
+            return newRule;
+        }
     }
 
     /**
@@ -138,8 +128,8 @@ public class Main {
         return true;
     }
 
-    public static boolean handleFalseVars(SatSolver satSolver, int numberOfVariables, int goalFalseVars) throws TimeoutException {
-        int falseVarsNow = getFalseVars(satSolver, numberOfVariables).length;
+    public static boolean handleAlwaysFalseVars(SatSolver satSolver, int numberOfVariables, int goalFalseVars) throws TimeoutException {
+        int falseVarsNow = SolverUsages.getAlwaysFalseVars(satSolver, numberOfVariables).length;
         if (!(falseVarsNow <= goalFalseVars)) {
             System.err.println("This rule would exclude too many variables and make it no longer possible to select them: " + falseVarsNow + "/" + goalFalseVars);
             return false;
@@ -147,8 +137,8 @@ public class Main {
         return true;
     }
 
-    public static boolean handleTrueVars(SatSolver satSolver, int numberOfVariables, int goalTrueVars) throws TimeoutException {
-        int trueVarsNow = getTrueVars(satSolver, numberOfVariables).length;
+    public static boolean handleAlwaysTrueVars(SatSolver satSolver, int numberOfVariables, int goalTrueVars) throws TimeoutException {
+        int trueVarsNow = SolverUsages.getAlwaysTrueVars(satSolver, numberOfVariables).length;
         if (!(trueVarsNow <= goalTrueVars)) {
             System.err.println("This rule would make too many variables always true and force the selection of this variable: " + trueVarsNow + "/" + goalTrueVars);
             return false;
@@ -163,47 +153,4 @@ public class Main {
             return new BigInteger("-1");
         }
     }
-
-    public static int[] getFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
-            if (!satSolver.isSatisfiableWith(var) && satSolver.isSatisfiableWith(-var)) {
-                // always false
-                result.add(var);
-            }
-        }
-        return result.stream().mapToInt(i -> i).toArray();
-    }
-
-    public static int[] getTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
-            if (!satSolver.isSatisfiableWith(-var) && satSolver.isSatisfiableWith(var)) {
-                // always true
-                result.add(var);
-            }
-        }
-        return result.stream().mapToInt(i -> i).toArray();
-    }
-
-    public static int[] getPossibleTrueVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
-            if (satSolver.isSatisfiableWith(var)) {
-                result.add(var);
-            }
-        }
-        return result.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    public static int[] getPossibleFalseVars(SatSolver satSolver, int anzahlVariablen) throws TimeoutException {
-        List<Integer> result = new ArrayList<>();
-        for (int var = 1; var <= anzahlVariablen; var++) {
-            if (satSolver.isSatisfiableWith(-var)) {
-                result.add(var);
-            }
-        }
-        return result.stream().mapToInt(Integer::intValue).toArray();
-    }
-
 }
