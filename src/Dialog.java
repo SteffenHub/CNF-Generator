@@ -1,3 +1,6 @@
+import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.TimeoutException;
+
 import java.math.BigInteger;
 import java.util.*;
 
@@ -6,7 +9,7 @@ public class Dialog {
     private Scanner scanner;
 
 
-    public InputData startDialog(){
+    public InputData startDialog() throws TimeoutException {
         this.scanner = new Scanner(System.in);
         InputData iD = new InputData();
         iD.numberOfVariables = this.askHowManyVariables();
@@ -21,8 +24,14 @@ public class Dialog {
         int[] rulesSize = this.askForRuleSize();
         iD.minRuleSize = rulesSize[0];
         iD.maxRuleSize = rulesSize[1];
-        iD.falseVars = this.askForFalseVars(iD.numberOfVariables);
-        iD.trueVars = this.askForTrueVars(iD.numberOfVariables);
+        try {
+            SatSolver satSolver = new SatSolver(iD.familyRules);
+            iD.falseVars = this.askForFalseVars(satSolver, iD.numberOfVariables);
+            iD.trueVars = this.askForTrueVars(satSolver, iD.numberOfVariables);
+        }catch (ContradictionException e){
+            System.err.println("failed to find always true/false vars. Please start Dialog again.");
+            return startDialog();
+        }
         this.scanner.close();
         return iD;
     }
@@ -102,7 +111,8 @@ public class Dialog {
     }
 
     private int[] askForRuleSize(){
-        System.out.println("what lengths should the other family independent rules have. e.g. (1-3)");
+        System.out.println("what lengths should the other family independent rules have. e.g. (2-6)");
+        System.out.println("You should start with min Rule size = 2. If rule size is 1 the variable in this rule will be always false");
         String minMaxRuleSizeInput = scanner.nextLine();
         String[] split = minMaxRuleSizeInput.split("-");
         int minRuleSize = Integer.parseInt(split[0]);
@@ -110,16 +120,18 @@ public class Dialog {
         return new int[]{minRuleSize, maxRuleSize};
     }
 
-    private int askForFalseVars(int numberOfVariables){
+    private int askForFalseVars(SatSolver satSolver, int numberOfVariables) throws TimeoutException {
         System.out.println("What percentage of the variables should be False. Slice as decimal number. e.g. 0.11 or 0.04");
+        System.out.println("Now there are " + SolverUsages.getAlwaysFalseVars(satSolver, numberOfVariables).length + " False Vars in rule set");
         double percentageFalseVarsDouble = Double.parseDouble(scanner.nextLine());
         int falseVars = (int) (numberOfVariables * percentageFalseVarsDouble);
         System.out.println("This results in " + falseVars + " variables that should always be False");
         return falseVars;
     }
 
-    private int askForTrueVars(int numberOfVariables){
+    private int askForTrueVars(SatSolver satSolver, int numberOfVariables) throws TimeoutException {
         System.out.println("What percentage of the variables should be True. Slice as decimal number. e.g. 0.09");
+        System.out.println("Now there are " + SolverUsages.getAlwaysTrueVars(satSolver, numberOfVariables).length + " True Vars in rule set");
         double percentageTrueVarsDouble = Double.parseDouble(scanner.nextLine());
         int trueVars = (int) (numberOfVariables * percentageTrueVarsDouble);
         System.out.println("This results in " + trueVars + " variables that should always be True");
