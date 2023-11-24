@@ -33,6 +33,11 @@ public class Main {
                 System.err.println("Error during find next potential rule.");
                 continue;
             }
+            if (Operation.isIn(rules, nextRule)){
+                System.out.println(Arrays.toString(nextRule));
+                System.err.println("Rule already exists.");
+                continue;
+            }
 
             System.out.println("Add next Rule to Solver: " + Arrays.toString(nextRule));
             rules.add(nextRule);

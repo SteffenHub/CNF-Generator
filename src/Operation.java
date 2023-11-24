@@ -144,4 +144,23 @@ public class Operation {
         }
         return false;
     }
+
+    public static boolean isIn(List<int[]> list, int[] member){
+        for(int[] l : list){
+            if (l.length != member.length){
+                continue;
+            }
+            boolean allSame = true;
+            for (int i = 0; i < l.length; i++) {
+                if (l[i] != member[i]){
+                    allSame = false;
+                    break;
+                }
+            }
+            if (allSame){
+                return true;
+            }
+        }
+        return false;
+    }
 }
