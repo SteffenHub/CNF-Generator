@@ -22,14 +22,18 @@ public class Main {
         BigInteger variance = iD.variance;
         SatSolver satSolver = new SatSolver(rules);
         int[] triedFalseTrueVars = new int[]{0, 0};
+        List<int[]> rulesGeneratedByNow = new ArrayList<>();
+        int numberGenerateRules = 40;
 
         boolean varianceReached = false;
         while (!varianceReached) {
             System.out.println("-----------------------------------------------------------------------------");
+            satSolver = new SatSolver(rules);
+            //TODO catch contradiction
             int[] nextRule;
             try {
                 nextRule = getNextRule(satSolver, iD, triedFalseTrueVars, 400);
-            }catch(TimeoutException e){
+            } catch (TimeoutException e) {
                 System.err.println("Error during find next potential rule.");
                 continue;
             }
@@ -40,27 +44,39 @@ public class Main {
             }
 
             System.out.println("Add next Rule to Solver: " + Arrays.toString(nextRule));
-            rules.add(nextRule);
-            satSolver = new SatSolver(rules);
+            rulesGeneratedByNow.add(nextRule);
 
             // satSolver checks
             try {
-                if (!handleIsSatisfiableWithRuleAndAddRuleToSatSolver(satSolver, nextRule) ||
+                if (!handleIsSatisfiableWithRuleAndAddRuleToSatSolver(satSolver, rulesGeneratedByNow) ||
                         !handleAlwaysFalseVars(satSolver, iD.numberOfVariables, iD.falseVars) ||
                         !handleAlwaysTrueVars(satSolver, iD.numberOfVariables, iD.trueVars)) {
-                    rules.remove(nextRule);
+                    rulesGeneratedByNow.remove(nextRule);
                     continue;
                 }
-            }catch(TimeoutException e){
+                if (nextRule.length > 1) {
+                    //normal rule not always true/false rule
+                    if (rulesGeneratedByNow.size() < numberGenerateRules) {
+                        //get the next rule
+                        continue;
+                    }
+                }
+            } catch (TimeoutException e) {
                 System.err.println("Sat Solver calculation failed. Timeout. I am taking this rule out again");
-                rules.remove(nextRule);
+                rulesGeneratedByNow.remove(nextRule);
                 continue;
             }
 
-            variance = getVariance(rules, iD.numberOfVariables);
+            List<int[]> combinedList = new ArrayList<>(rules);
+            combinedList.addAll(rulesGeneratedByNow);
+
+            System.out.println("SatSolver checks passed. Start variance check");
+            variance = getVariance(combinedList, iD.numberOfVariables);
             if (variance.compareTo(new BigInteger("-1")) == 0) {
                 System.err.println("Something went wrong with c2d when finding the variance. I am taking this rule out again");
-                rules.remove(nextRule);
+                rulesGeneratedByNow = new ArrayList<>();
+                --numberGenerateRules;
+                System.out.println("decrease number of generate rules to: " + numberGenerateRules);
                 continue;
             }
             System.out.println("The variance with the new rule is now: " + Operation.pointsToBigInt(variance));
@@ -69,7 +85,9 @@ public class Main {
             // If the variance is too small
             if (variance.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
                 System.err.println("that pushes the variance too hard I take the rule out again");
-                rules.remove(nextRule);
+                rulesGeneratedByNow = new ArrayList<>();
+                --numberGenerateRules;
+                System.out.println("decrease number of generate rules to: " + numberGenerateRules);
                 continue;
             }
             // If an optimal Variance is reached -> Stop calculation
@@ -80,6 +98,9 @@ public class Main {
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
             System.out.println("\nWe take these!\n");
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
+            rules.addAll(rulesGeneratedByNow);
+            rulesGeneratedByNow = new ArrayList<>();
+            numberGenerateRules = 40;
         }
 
         // save to file
@@ -100,11 +121,11 @@ public class Main {
      * containing negated random chosen variables, which aren't always true/false by now.
      * Example: [-7, -34, -92]
      *
-     * @param satSolver The SAT solver instance to get always true/false variables.
-     * @param iD The input data object containing parameters for rule generation.
+     * @param satSolver          The SAT solver instance to get always true/false variables.
+     * @param iD                 The input data object containing parameters for rule generation.
      * @param triedFalseTrueVars An array tracking the number of attempts for finding true/false variables.
-     * @param breakTries The number of tries for finding always true/false rules. After which the method will
-     *                   decrement the input goal for always true/false variables.
+     * @param breakTries         The number of tries for finding always true/false rules. After which the method will
+     *                           decrement the input goal for always true/false variables.
      * @return An array representing the next rule to be added to the solver.
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
@@ -158,19 +179,17 @@ public class Main {
      * added without causing a contradiction.
      *
      * @param satSolver The SAT solver instance to which the rule will be added.
-     * @param nextRule The rule to be added to the SAT solver.
+     * @param nextRules  The rules to be added to the SAT solver.
      * @return True if the rule is added successfully; false if the rule creates a contradiction.
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
-    public static boolean handleIsSatisfiableWithRuleAndAddRuleToSatSolver(SatSolver satSolver, int[] nextRule) throws TimeoutException {
-        if (!satSolver.isSatisfiableWithClause(nextRule)) {
-            System.err.println("This rule creates a contradiction, I'll take it out again");
-            return false;
-        }
+    public static boolean handleIsSatisfiableWithRuleAndAddRuleToSatSolver(SatSolver satSolver, List<int[]> nextRules) throws TimeoutException {
         try {
-            satSolver.addRule(nextRule);
+            for (int[] rule : nextRules){
+                satSolver.addRule(rule);
+            }
         } catch (ContradictionException e) {
-            // should not happen, because we check before with isSatisfiableWithClause()
+            System.err.println("This rules create a contradiction, I'll take it out again");
             return false;
         }
         return true;
@@ -180,9 +199,9 @@ public class Main {
      * Evaluates whether the current set of rules in the SAT solver meets the target for the number of variables
      * that are always false. If the number of always false variables exceeds the goal, the method returns false.
      *
-     * @param satSolver The SAT solver instance to evaluate.
+     * @param satSolver         The SAT solver instance to evaluate.
      * @param numberOfVariables The total number of variables in consideration.
-     * @param goalFalseVars The target number of variables that should always be false.
+     * @param goalFalseVars     The target number of variables that should always be false.
      * @return True if the goal for always false variables is met or under the limit; false otherwise.
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
@@ -199,9 +218,9 @@ public class Main {
      * Evaluates whether the current set of rules in the SAT solver meets the target for the number of variables
      * that are always true. If the number of always true variables exceeds the goal, the method returns false.
      *
-     * @param satSolver The SAT solver instance to evaluate.
+     * @param satSolver         The SAT solver instance to evaluate.
      * @param numberOfVariables The total number of variables in consideration.
-     * @param goalTrueVars The target number of variables that should always be true.
+     * @param goalTrueVars      The target number of variables that should always be true.
      * @return True if the goal for always true variables is met or under the limit; false otherwise.
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
@@ -219,7 +238,7 @@ public class Main {
      * integer arrays, to teh c2d solver and calculates the variance based on the number of variables. In case of
      * an error during computation, a default error value is returned (BigInteger(-1)).
      *
-     * @param allRules The list of rules for the SAT problem, with each rule as an array of integers.
+     * @param allRules          The list of rules for the SAT problem, with each rule as an array of integers.
      * @param numberOfVariables The total number of variables in the SAT problem.
      * @return The variance as a BigInteger, or a default error value if the calculation fails.
      */
