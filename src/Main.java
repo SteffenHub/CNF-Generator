@@ -23,7 +23,8 @@ public class Main {
         SatSolver satSolver = new SatSolver(rules);
         int[] triedFalseTrueVars = new int[]{0, 0};
         List<int[]> rulesGeneratedByNow = new ArrayList<>();
-        int numberGenerateRules = 40;
+        int numberGenerateRules = 400;
+        int numberGenerateRulesInput = 400;
 
         boolean varianceReached = false;
         while (!varianceReached) {
@@ -75,7 +76,8 @@ public class Main {
             if (variance.compareTo(new BigInteger("-1")) == 0) {
                 System.err.println("Something went wrong with c2d when finding the variance. I am taking this rule out again");
                 rulesGeneratedByNow = new ArrayList<>();
-                --numberGenerateRules;
+                numberGenerateRules = (int) (numberGenerateRules * 0.8);
+                numberGenerateRulesInput = (int) (numberGenerateRulesInput * 0.8);
                 System.out.println("decrease number of generate rules to: " + numberGenerateRules);
                 continue;
             }
@@ -86,7 +88,8 @@ public class Main {
             if (variance.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
                 System.err.println("that pushes the variance too hard I take the rule out again");
                 rulesGeneratedByNow = new ArrayList<>();
-                --numberGenerateRules;
+                numberGenerateRules = (int) (numberGenerateRules / 2);
+                numberGenerateRulesInput = (int) (numberGenerateRulesInput / 2);
                 System.out.println("decrease number of generate rules to: " + numberGenerateRules);
                 continue;
             }
@@ -100,7 +103,7 @@ public class Main {
             System.out.println("->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->->");
             rules.addAll(rulesGeneratedByNow);
             rulesGeneratedByNow = new ArrayList<>();
-            numberGenerateRules = 40;
+            numberGenerateRules = numberGenerateRulesInput;
         }
 
         // save to file
