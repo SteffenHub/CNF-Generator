@@ -51,7 +51,7 @@ Under the Download section you will find the download link
 TODO
 
 # Example Dialog
-With starting the program you will get a dialog like this:
+With starting the program you will get a dialog like this(The green text shows the user input):
 
 > > How many Variables should exist?  
 >
