@@ -1,7 +1,8 @@
 # CNF-Generator
-This Code generates CNF-files using [Input data](#input-data).
+This code generates CNF files based on input data that is entered in a dialog.  
+An example of a dialog can be found here [Example Dialog](#example-dialog). 
 
-Example for a CNF:
+# Example CNF:
 > c  
 > c Input Variance: 1000000000000  
 > c Actual Variance: 1028411394552  
@@ -25,6 +26,7 @@ Example for a CNF:
 > -1 -74 -87 0  
 > -17 -74 -48 -72 0  
 > -79 -3 -80 -79 0  
+> ...
 
 # Run
 To run this Code you need to download the Sat4J/c2d Solver and integrate it into your Project.
