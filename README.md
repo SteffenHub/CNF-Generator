@@ -29,7 +29,7 @@ Example for a CNF:
 To run this Code you need to download the Sat4J/c2d Solver and integrate it into your Project.
 
 #### [Download Sat4J](#download-sat4j-1)
-*  In IntelliJ go to File -> Project Structure -> Libaries -> + -> Java and select the org.sat4j-core.jar
+*  In IntelliJ go to File -> Project Structure -> Libraries -> + -> Java and select the org.sat4j-core.jar
 #### [Download c2d](#download-c2d)
 *  Just put the c2d.exe into the main folder(CNF-Generator)
 *  If the name is not 'c2d.exe' e.g. 'c2d_windows.exe'/ 'c2d_linux.exe' you have to rename the file

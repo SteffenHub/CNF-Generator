@@ -91,8 +91,8 @@ public class Dialog {
             varRun = varRun + famSize;
             familyRules.addAll(buildFamilyRules(newFamRule));
         }
-        for (int[] famRegel : familyRules) {
-            System.out.println(Arrays.toString(famRegel));
+        for (int[] famRule : familyRules) {
+            System.out.println(Arrays.toString(famRule));
         }
         System.out.println("These were the families!");
         return familyRules;

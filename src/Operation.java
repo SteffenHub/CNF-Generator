@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Hier werden paar Rechenoperationen ausgelagert, die gebraucht werden koennten.
+ * A few arithmetic operations that could be needed are outsourced here.
  */
 public class Operation {
 

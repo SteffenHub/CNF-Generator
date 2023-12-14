@@ -39,13 +39,13 @@ public class TxtConverter {
         for (int i = 0; i < cnfStr.size(); i++) {
             if (cnfStr.get(i).charAt(0) == 'c' || cnfStr.get(i).charAt(0) == 'p') continue;
             //split line on blank
-            String[] aufgeteilt = cnfStr.get(i).split(" ");
+            String[] split = cnfStr.get(i).split(" ");
             //Reserve memory. Decrement by 1 to ignore the 0 at the end of the line.
-            int[] klausel = new int[aufgeteilt.length - 1];
-            for (int x = 0; x < klausel.length; x++) {
-                klausel[x] = Integer.parseInt(aufgeteilt[x]);
+            int[] clause = new int[split.length - 1];
+            for (int x = 0; x < clause.length; x++) {
+                clause[x] = Integer.parseInt(split[x]);
             }
-            cnfArr.add(klausel);
+            cnfArr.add(clause);
         }
         return cnfArr;
     }
