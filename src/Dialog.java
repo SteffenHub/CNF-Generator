@@ -13,11 +13,20 @@ public class Dialog {
         this.scanner = new Scanner(System.in);
         InputData iD = new InputData();
         iD.numberOfVariables = this.askHowManyVariables();
-        int[] familySize = this.askForFamilySize();
-        iD.minFamilySize = familySize[0];
-        iD.maxFamilySize = familySize[1];
-        iD.familyRules = this.generateAndPrintFamilyRules(iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
-        iD.variance = this.getAndPrintFamilyVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
+        iD.useFamilies = this.askWantFamilies();
+        iD.familyRules = new ArrayList<>();
+        if (iD.useFamilies) {
+            int[] familySize = this.askForFamilySize();
+            iD.minFamilySize = familySize[0];
+            iD.maxFamilySize = familySize[1];
+            iD.familyRules = this.generateAndPrintFamilyRules(iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
+        }else{
+            // Add all variables as rule [var1 or not var1] to rules,so the solver knew all variables
+            for (int i = 1; i <= iD.numberOfVariables; i++) {
+                iD.familyRules.add(new int[]{i, -i});
+            }
+        }
+        iD.variance = this.getAndPrintVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
         BigInteger[] goalVarianceAndDeviation = this.askForGoalVariance();
         iD.goalVariance = goalVarianceAndDeviation[0];
         iD.goalVarianceDeviation = goalVarianceAndDeviation[1];
@@ -34,6 +43,19 @@ public class Dialog {
         }
         this.scanner.close();
         return iD;
+    }
+
+    private boolean askWantFamilies(){
+        System.out.println("Do you want to use family rules? type: 'true' or 'false'");
+        String line = this.scanner.nextLine();
+        if (line.equals("true")){
+            return true;
+        } else if (line.equals("false")) {
+            return false;
+        }else{
+            System.err.println("I did not understand the input. Please type: 'true' or 'false'");
+            return askWantFamilies();
+        }
     }
 
     private int askHowManyVariables(){
@@ -106,17 +128,17 @@ public class Dialog {
      * @param maxFamilySize The maximum size of a family.
      * @return The variance of the family rules as BigInteger.
      */
-    private BigInteger getAndPrintFamilyVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize){
+    private BigInteger getAndPrintVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize){
         try {
             BigInteger variance = Operation.getVariance(familyRules, numberOfVariables);
-            System.out.println("Only the family rules result in a variance of: " + variance);
+            System.out.println("Only the (family) rules result in a variance of: " + variance);
             System.out.println("respectively");
             System.out.println(Operation.pointsToBigInt(variance));
             return variance;
         }catch(Exception e){
             System.err.println("failed to find variance. Build new familyRules");
             familyRules = generateAndPrintFamilyRules(numberOfVariables, minFamilySize, maxFamilySize);
-            return getAndPrintFamilyVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize);
+            return getAndPrintVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize);
         }
     }
 
