@@ -36,7 +36,7 @@ public class Operation {
         TxtReaderWriter.writeArrayOfStrings("result.cnf", fileContent);
 
         //run c2d
-        String[] output = KonsolenSchnittstelle.konsolenEingabe("c2d -in result.cnf -count");
+        String[] output = ConsoleInterface.consoleInput("c2d -in result.cnf -count");
         System.out.println(Arrays.toString(output));
 
         // read count from c2d output
@@ -145,6 +145,17 @@ public class Operation {
         return false;
     }
 
+    /**
+     * Checks if a given integer is present in a list of integer arrays.
+     * This method iterates through each element of the provided list of integer arrays (list) and compares
+     * it with the specified integer array (member). If a match is found, the method returns true, indicating
+     * that the integer array is present in the list. If no match is found by the end of the list, the method
+     * returns false.
+     *
+     * @param list A list of integer arrays in which to search for the specified integer array.
+     * @param member The integer array to be searched for within the list.
+     * @return A boolean value; true if 'member' is found in 'list', false otherwise.
+     */
     public static boolean isIn(List<int[]> list, int[] member){
         for(int[] l : list){
             if (l.length != member.length){
