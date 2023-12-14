@@ -36,7 +36,7 @@ public class Operation {
         TxtReaderWriter.writeArrayOfStrings("result.cnf", fileContent);
 
         //run c2d
-        String[] output = KonsolenSchnittstelle.konsolenEingabe("c2d -in result.cnf -count");
+        String[] output = KonsolenSchnittstelle.konsolenEingabe("c2d -in result.cnf -count -keep_trivial_cls");
         System.out.println(Arrays.toString(output));
 
         // read count from c2d output
