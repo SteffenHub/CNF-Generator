@@ -6,6 +6,7 @@ Example for a CNF:
 > c Input Variance: 1000000000000  
 > c Actual Variance: 1028411394552  
 > c Input number of vars : 100  
+> c Input use Fam rules: true  
 > c Input Fam size: 1-4  
 > c Input Rule size: 2-5  
 > c Input False Variables: 3  
@@ -48,3 +49,43 @@ Under the Download section you will find the download link
 
 # Input data
 TODO
+
+# Example Dialog
+With starting the program you will get a dialog like this:
+
+> > How many Variables should exist?  
+>
+> > <p style="color: green;">50</p>
+>
+> > Do you want to use family rules? type: 'true' or 'false'  
+>
+> > <p style="color: green;">false</p>  
+>
+> > Only the (family) rules result in a variance of: 1125899906842624  
+> > respectively  
+> > 1.125.899.906.842.624
+> > What variance should be maintained, with the other rules added independently of the families?  
+> > Write WITHOUT points. The result can deviate up to 5% from the variance entered.  
+>
+> > <p style="color: green;">1000000000</p>  
+>
+> > Maximum deviation in the result: 50000000  
+> > what lengths should the other family independent rules have. e.g. (2-6)  
+> > You should start with min Rule size = 2. If rule size is 1 the variable in this rule will be always false  
+>
+> > <p style="color: green;">2-5</p>   
+>
+> > What percentage of the variables should be False. Slice as decimal number. e.g. 0.11 or 0.04  
+> > Now there are 0 False Vars in rule set
+>
+> > <p style="color: green;">0.04</p>  
+>
+> > This results in 2 variables that should always be False  
+> > What percentage of the variables should be True. Slice as decimal number. e.g. 0.09  
+> > Now there are 0 True Vars in rule set  
+>
+> > <p style="color: green;">0.08</p>  
+> 
+> > This results in 4 variables that should always be True  
+ 
+After answering all questions, the program will start to pick random variables, create rules with them and verify them with satisfiability and variance.
