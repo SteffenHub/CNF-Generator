@@ -49,9 +49,6 @@ Release are available at [reasoning.cs.ucla.edu](http://reasoning.cs.ucla.edu/c2
 
 Under the Download section you will find the download link
 
-# Input data
-TODO
-
 # Example Dialog
 With starting the program you will get a dialog like this:
 
