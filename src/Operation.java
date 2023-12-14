@@ -33,10 +33,10 @@ public class Operation {
             line.append("0");
             fileContent[i + 1] = line.toString();
         }
-        TxtReaderWriter.writeArrayOfStrings("result.cnf", fileContent);
+        TxtReaderWriter.writeArrayOfStrings("tmp_counting_input.cnf", fileContent, false);
 
         //run c2d
-        String[] output = ConsoleInterface.consoleInput("c2d -in result.cnf -count -keep_trivial_cls -in_memory");
+        String[] output = ConsoleInterface.consoleInput("c2d -in tmp_counting_input.cnf -count -keep_trivial_cls -in_memory");
         System.out.println(Arrays.toString(output));
 
         // read count from c2d output

@@ -3,8 +3,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class takes care of converting the data to a format, that can be written to a file.
+ * Or converting the read data from a file to the format, that can be used in the program.
+ */
 public class TxtConverter {
 
+    /**
+     * This method converts the given list of rules into a list of strings, which can be written to a file.
+     * The format of each rule is a string of integers separated by spaces, where the last integer is 0.
+     * The first line of the file contains the number of variables and the number of rules.
+     * This method is used for the CNF problem with families.
+     * It adds the actual variance and the actual number of false and true variables to the file.
+     */
     public static List<String> convertRulesToStringListCNF(List<int[]> rules, InputData inputData, BigInteger variance,
                                                            int actualFalseVars, int actualTrueVars) {
         List<String> fileOutput = new ArrayList<>();

@@ -112,7 +112,9 @@ public class Main {
         for (String line : fileOutput) {
             System.out.println(line);
         }
-        TxtReaderWriter.writeListOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + variance + ".txt", fileOutput);
+        TxtReaderWriter.writeArrayOfStrings("cnfBuilder" + iD.numberOfVariables + "Vars" + "Variance" + variance + ".txt", fileOutput.toArray(new String[0]), true);
+        System.out.println("There is a file 'tmp_counting_input.cnf' in the project folder, containing the same output as the result. You can delete this file, if you want.");
+        // TODO delete tmp_counting_input.cnf automatically
     }
 
     /**

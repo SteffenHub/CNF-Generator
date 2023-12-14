@@ -1,13 +1,19 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * This class takes care of writing and reading txt files
  */
 public class TxtReaderWriter {
 
-    public static void writeListOfStrings(String nameOfFileWithEnding, List<String> contentList) throws IOException {
+    /**
+     * This method writes a list of strings to a file. Each String is written in a new line.
+     *
+     * @param nameOfFileWithEnding The name of the file with the ending. For example: "result.cnf"
+     * @param contentList The list of strings to be written to the file.
+     * @throws IOException If the file cannot be written.
+     */
+    public static void writeArrayOfStrings(String nameOfFileWithEnding, String[] contentList, boolean printConfirmation) throws IOException {
         FileWriter fw = new FileWriter("./" + nameOfFileWithEnding, StandardCharsets.UTF_8);
         BufferedWriter writer = new BufferedWriter(fw);
         for (String line : contentList) {
@@ -15,18 +21,8 @@ public class TxtReaderWriter {
             writer.newLine();
         }
         writer.close();
-        System.out.println("The File '" + nameOfFileWithEnding + "' was saved in the same folder");
-    }
-
-
-    public static void writeArrayOfStrings(String nameOfFileWithEnding, String[] contentList) throws IOException {
-        FileWriter fw = new FileWriter("./" + nameOfFileWithEnding, StandardCharsets.UTF_8);
-        BufferedWriter writer = new BufferedWriter(fw);
-        for (String line : contentList) {
-            writer.append(line);
-            writer.newLine();
+        if (printConfirmation) {
+            System.out.println("The File '" + nameOfFileWithEnding + "' was saved in the same folder");
         }
-        writer.close();
-        //System.out.println("The File '" + nameOfFileWithEnding + "' was saved in the same folder");
     }
 }
