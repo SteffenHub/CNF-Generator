@@ -64,4 +64,6 @@ public class InputData {
      * true if the family rules should be used.
      */
     public boolean useFamilies;
+
+    public String countSolver;
 }

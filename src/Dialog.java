@@ -25,6 +25,7 @@ public class Dialog {
     public InputData startDialog() throws TimeoutException {
         this.scanner = new Scanner(System.in);
         InputData iD = new InputData();
+        iD.countSolver = this.askForCountSolver();
         iD.numberOfVariables = this.askHowManyVariables();
         iD.useFamilies = this.askWantFamilies();
         iD.familyRules = new ArrayList<>();
@@ -39,7 +40,7 @@ public class Dialog {
                 iD.familyRules.add(new int[]{i, -i});
             }
         }
-        iD.variance = this.getAndPrintVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
+        iD.variance = this.getAndPrintVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize, iD.countSolver);
         BigInteger[] goalVarianceAndDeviation = this.askForGoalVariance();
         iD.goalVariance = goalVarianceAndDeviation[0];
         iD.goalVarianceDeviation = goalVarianceAndDeviation[1];
@@ -56,6 +57,19 @@ public class Dialog {
         }
         this.scanner.close();
         return iD;
+    }
+
+    private String askForCountSolver(){
+        System.out.println("Which counting solver do you want to use. Choose between 'c2d' or 'sharpSAT'.");
+        String line = this.scanner.nextLine();
+        if (line.equals("c2d")){
+            return line;
+        } else if (line.equals("sharpSAT")) {
+            return line;
+        }else{
+            System.err.println("Unknown solver for counting: " + line + " Choose between 'c2d' or 'sharpSAT'." );
+            return askForCountSolver();
+        }
     }
 
     /**
@@ -166,17 +180,18 @@ public class Dialog {
      * @param maxFamilySize The maximum size of a family.
      * @return The variance of the family rules as BigInteger.
      */
-    private BigInteger getAndPrintVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize){
+    private BigInteger getAndPrintVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize, String countSolver){
         try {
-            BigInteger variance = Operation.getVariance(familyRules, numberOfVariables);
+            BigInteger variance = Operation.getVariance(countSolver, familyRules, numberOfVariables);
             System.out.println("Only the (family) rules result in a variance of: " + variance);
             System.out.println("respectively");
             System.out.println(Operation.pointsToBigInt(variance));
             return variance;
         }catch(Exception e){
+            System.out.println(e.toString());
             System.err.println("failed to find variance. Build new familyRules");
             familyRules = generateAndPrintFamilyRules(numberOfVariables, minFamilySize, maxFamilySize);
-            return getAndPrintVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize);
+            return getAndPrintVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize, countSolver);
         }
     }
 

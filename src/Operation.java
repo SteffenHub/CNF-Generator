@@ -9,6 +9,16 @@ import java.util.List;
  */
 public class Operation {
 
+    public static BigInteger getVariance(String countSolver, List<int[]> cnf, int numberOfVariables) throws Exception {
+        if (countSolver.equals("c2d")){
+            return getVariance_c2d(cnf, numberOfVariables);
+        } else if (countSolver.equals("sharpSAT")) {
+            return getVariance_sharpSAT(cnf, numberOfVariables);
+        }else{
+            throw new Exception("Unknown solver for counting: " + countSolver);
+        }
+    }
+
     /**
      * Calculates the variance of a given CNF (Conjunctive Normal Form) problem.
      * This method first generates the CNF data from the provided list of clauses and the number of variables.
@@ -21,7 +31,7 @@ public class Operation {
      * @return A BigInteger representing the count of satisfying assignments (models) of the CNF problem.
      * @throws Exception If the method is unable to read the counting models from the 'c2d' output.
      */
-    public static BigInteger getVariance(List<int[]> cnf, int numberOfVariables) throws Exception {
+    public static BigInteger getVariance_c2d(List<int[]> cnf, int numberOfVariables) throws Exception {
         // create the CNF output data
         String[] fileContent = new String[cnf.size() + 1];
         fileContent[0] = "p cnf " + numberOfVariables + " " + cnf.size();
@@ -60,6 +70,48 @@ public class Operation {
                     character = output[i].charAt(index);
                 }
                 count = new BigInteger(countString.toString());
+                break;
+            }
+        }
+        if (count.compareTo(new BigInteger("-1")) == 0){
+            throw new Exception("cant-read counting models");
+        }else{
+            return count;
+        }
+    }
+
+    public static BigInteger getVariance_sharpSAT(List<int[]> cnf, int numberOfVariables) throws Exception {
+        // create the CNF output data
+        String[] fileContent = new String[cnf.size() + 1];
+        fileContent[0] = "p cnf " + numberOfVariables + " " + cnf.size();
+        for (int i = 0; i < cnf.size(); i++) {
+            StringBuilder line = new StringBuilder();
+            for (int var : cnf.get(i)) {
+                line.append(var).append(" ");
+            }
+            line.append("0");
+            fileContent[i + 1] = line.toString();
+        }
+        TxtReaderWriter.writeArrayOfStrings("tmp_counting_input.cnf", fileContent, false);
+
+        //run c2d
+        String[] output = ConsoleInterface.consoleInput("./sharpSAT tmp_counting_input.cnf");
+        System.out.println(Arrays.toString(output));
+
+
+        // read count from c2d output
+        BigInteger count = new BigInteger("-1");
+        for (int i = output.length - 1; i >= 0; i--) {
+            if (output[i].length() < 5){
+                continue;
+            }
+            if (output[i].charAt(0) == '#' &&
+                    output[i].charAt(1) == ' ' &&
+                    output[i].charAt(2) == 's' &&
+                    output[i].charAt(3) == 'o' &&
+                    output[i].charAt(4) == 'l' &&
+                    output[i].charAt(5) == 'u'){
+                count = new BigInteger(output[i+1]);
                 break;
             }
         }

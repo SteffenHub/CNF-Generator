@@ -72,12 +72,14 @@ public class Main {
             combinedList.addAll(rulesGeneratedByNow);
 
             System.out.println("SatSolver checks passed. Start variance check");
-            variance = getVariance(combinedList, iD.numberOfVariables);
+            variance = getVariance(combinedList, iD.numberOfVariables, iD.countSolver);
             if (variance.compareTo(new BigInteger("-1")) == 0) {
                 System.err.println("Something went wrong with c2d when finding the variance. I am taking this rule out again");
+                if (rulesGeneratedByNow.size() > 1) {
+                    numberGenerateRules = (int) (numberGenerateRules * 0.8);
+                    numberGenerateRulesInput = (int) (numberGenerateRulesInput * 0.8);
+                }
                 rulesGeneratedByNow = new ArrayList<>();
-                numberGenerateRules = (int) (numberGenerateRules * 0.8);
-                numberGenerateRulesInput = (int) (numberGenerateRulesInput * 0.8);
                 System.out.println("decrease number of generate rules to: " + numberGenerateRules);
                 continue;
             }
@@ -87,9 +89,11 @@ public class Main {
             // If the variance is too small
             if (variance.compareTo(iD.goalVariance.subtract(iD.goalVarianceDeviation)) < 0) {
                 System.err.println("that pushes the variance too hard I take the rule out again");
+                if (rulesGeneratedByNow.size() > 1) {
+                    numberGenerateRules = (int) (numberGenerateRules / 2);
+                    numberGenerateRulesInput = (int) (numberGenerateRulesInput / 2);
+                }
                 rulesGeneratedByNow = new ArrayList<>();
-                numberGenerateRules = (int) (numberGenerateRules / 2);
-                numberGenerateRulesInput = (int) (numberGenerateRulesInput / 2);
                 System.out.println("decrease number of generate rules to: " + numberGenerateRules);
                 continue;
             }
@@ -247,9 +251,9 @@ public class Main {
      * @param numberOfVariables The total number of variables in the SAT problem.
      * @return The variance as a BigInteger, or a default error value if the calculation fails.
      */
-    public static BigInteger getVariance(List<int[]> allRules, int numberOfVariables) {
+    public static BigInteger getVariance(List<int[]> allRules, int numberOfVariables, String countSolver) {
         try {
-            return Operation.getVariance(allRules, numberOfVariables);
+            return Operation.getVariance(countSolver, allRules, numberOfVariables);
         } catch (Exception e) {
             return new BigInteger("-1");
         }
