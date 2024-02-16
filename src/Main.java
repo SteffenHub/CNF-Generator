@@ -16,6 +16,7 @@ public class Main {
      */
     public static void main(String[] args) throws ContradictionException, IOException, TimeoutException {
         InputData iD = new Dialog().startDialog();
+        long startTime = System.currentTimeMillis();
         // All found Rules. Insert Family Rules
         List<int[]> rules = new ArrayList<>(iD.familyRules);
 
@@ -109,10 +110,11 @@ public class Main {
             rulesGeneratedByNow = new ArrayList<>();
             numberGenerateRules = numberGenerateRulesInput;
         }
+        long neededTime = System.currentTimeMillis() - startTime;
 
         // save to file
         List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, SolverUsages.getAlwaysFalseVars(satSolver,
-                iD.numberOfVariables).length, SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables).length);
+                iD.numberOfVariables).length, SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables).length, neededTime);
         for (String line : fileOutput) {
             System.out.println(line);
         }

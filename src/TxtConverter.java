@@ -17,7 +17,7 @@ public class TxtConverter {
      * It adds the actual variance and the actual number of false and true variables to the file.
      */
     public static List<String> convertRulesToStringListCNF(List<int[]> rules, InputData inputData, BigInteger variance,
-                                                           int actualFalseVars, int actualTrueVars) {
+                                                           int actualFalseVars, int actualTrueVars, long calculationTime) {
         List<String> fileOutput = new ArrayList<>();
         fileOutput.add("c ");
         fileOutput.add("c Input Variance: " + inputData.goalVariance);
@@ -30,6 +30,7 @@ public class TxtConverter {
         fileOutput.add("c Actual False Variables: " + actualFalseVars + " Vars");
         fileOutput.add("c Input True Variables: " + inputData.trueVars);
         fileOutput.add("c Actual True Variables: " + actualTrueVars + " Vars");
+        fileOutput.add("c Calculation time: " + calculationTime/1000 + " seconds");
         fileOutput.add("c ");
         fileOutput.add("p cnf " + inputData.numberOfVariables + " " + rules.size());
         for (int[] rule : rules) {
