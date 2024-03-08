@@ -25,6 +25,8 @@ public class Dialog {
     public InputData startDialog() throws TimeoutException {
         this.scanner = new Scanner(System.in);
         InputData iD = new InputData();
+        iD.seed = this.askForSeed();
+        iD.randomGenerator = new Random(iD.seed);
         iD.countSolver = this.askForCountSolver();
         iD.numberOfVariables = this.askHowManyVariables();
         iD.useFamilies = this.askWantFamilies();
@@ -33,14 +35,14 @@ public class Dialog {
             int[] familySize = this.askForFamilySize();
             iD.minFamilySize = familySize[0];
             iD.maxFamilySize = familySize[1];
-            iD.familyRules = this.generateAndPrintFamilyRules(iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize);
+            iD.familyRules = this.generateAndPrintFamilyRules(iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize, iD.randomGenerator);
         }else{
             // Add all variables as rule [var1 or not var1] to rules,so the solver knew all variables
             for (int i = 1; i <= iD.numberOfVariables; i++) {
                 iD.familyRules.add(new int[]{i, -i});
             }
         }
-        iD.variance = this.getAndPrintVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize, iD.countSolver);
+        iD.variance = this.getAndPrintVariance(iD.familyRules, iD.numberOfVariables, iD.minFamilySize, iD.maxFamilySize, iD.countSolver, iD.randomGenerator);
         BigInteger[] goalVarianceAndDeviation = this.askForGoalVariance();
         iD.goalVariance = goalVarianceAndDeviation[0];
         iD.goalVarianceDeviation = goalVarianceAndDeviation[1];
@@ -57,6 +59,23 @@ public class Dialog {
         }
         this.scanner.close();
         return iD;
+    }
+
+    private long askForSeed(){
+        System.out.println("Do you want to use a specific seed for the random generator?");
+        System.out.println("Example: '698234689'. If you don't want to use a seed type 'None'");
+        System.out.println("If 'None' is chosen a random seed on the basis of current time and date will be used");
+        String line = this.scanner.nextLine();
+        if (line.equals("None")) {
+            Random rand = new Random();
+            return rand.nextLong();
+        }
+        try{
+            return Long.parseLong(line);
+        }catch(Exception e){
+            System.out.println("Invalid input! Example: '698234689'. If you don't want to use a seed type 'None'");
+        }
+        return this.askForSeed();
     }
 
     private String askForCountSolver(){
@@ -124,9 +143,8 @@ public class Dialog {
      * @param maxFamSize The maximum size of a family.
      * @return A list of family rules.
      */
-    private List<int[]> generateAndPrintFamilyRules(int numberOfVariables, int minFamSize, int maxFamSize){
+    private List<int[]> generateAndPrintFamilyRules(int numberOfVariables, int minFamSize, int maxFamSize, Random rand){
         List<int[]> familyRules = new ArrayList<>();
-        Random rand = new Random();
         int varRun = 0;
         while (varRun < numberOfVariables) {
             int famSize = minFamSize + rand.nextInt(maxFamSize + 1 - minFamSize);
@@ -180,7 +198,7 @@ public class Dialog {
      * @param maxFamilySize The maximum size of a family.
      * @return The variance of the family rules as BigInteger.
      */
-    private BigInteger getAndPrintVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize, String countSolver){
+    private BigInteger getAndPrintVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize, String countSolver, Random rand){
         try {
             BigInteger variance = Operation.getVariance(countSolver, familyRules, numberOfVariables);
             System.out.println("Only the (family) rules result in a variance of: " + variance);
@@ -190,8 +208,8 @@ public class Dialog {
         }catch(Exception e){
             System.out.println(e.toString());
             System.err.println("failed to find variance. Build new familyRules");
-            familyRules = generateAndPrintFamilyRules(numberOfVariables, minFamilySize, maxFamilySize);
-            return getAndPrintVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize, countSolver);
+            familyRules = generateAndPrintFamilyRules(numberOfVariables, minFamilySize, maxFamilySize, rand);
+            return getAndPrintVariance(familyRules, numberOfVariables, minFamilySize, maxFamilySize, countSolver, rand);
         }
     }
 

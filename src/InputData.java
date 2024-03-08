@@ -1,5 +1,6 @@
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This class stores all the input data from the user.
@@ -66,4 +67,7 @@ public class InputData {
     public boolean useFamilies;
 
     public String countSolver;
+
+    public Random randomGenerator;
+    public long seed;
 }

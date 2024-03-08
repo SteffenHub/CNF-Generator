@@ -34,7 +34,7 @@ public class Main {
             //TODO catch contradiction
             int[] nextRule;
             try {
-                nextRule = getNextRule(satSolver, iD, triedFalseTrueVars, 400);
+                nextRule = getNextRule(satSolver, iD, triedFalseTrueVars, 400, iD.randomGenerator);
             } catch (TimeoutException e) {
                 System.err.println("Error during find next potential rule.");
                 continue;
@@ -114,7 +114,7 @@ public class Main {
 
         // save to file
         List<String> fileOutput = TxtConverter.convertRulesToStringListCNF(rules, iD, variance, SolverUsages.getAlwaysFalseVars(satSolver,
-                iD.numberOfVariables).length, SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables).length, neededTime);
+                iD.numberOfVariables).length, SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables).length, neededTime, iD.seed);
         for (String line : fileOutput) {
             System.out.println(line);
         }
@@ -140,8 +140,7 @@ public class Main {
      * @return An array representing the next rule to be added to the solver.
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
-    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars, int breakTries) throws TimeoutException {
-        Random rand = new Random();
+    public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars, int breakTries, Random rand) throws TimeoutException {
         int[] trueVars = SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables);
         if (iD.trueVars > trueVars.length) {
             ++triedFalseTrueVars[1];
