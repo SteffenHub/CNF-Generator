@@ -85,38 +85,34 @@ To use sharpSAT you need to install the gmp bignum library using 'sudo apt-get i
 With starting the program you will get a dialog like this:
 
 > Do you want to use a specific seed for the random generator?  
-Example: '698234689'. If you don't want to use a seed type 'None'  
-If 'None' is chosen a random seed on the basis of current time and date will be used
+> Example: '698234689'. If you don't want to use a seed type 'None'  
+> If 'None' is chosen a random seed on the basis of current time and date will be used
 
-> None
+> 9185580422600139075
 
 > Which counting solver do you want to use. Choose between 'c2d' or 'sharpSAT'.
 
 > c2d
 
-> How many Variables should exist?  
+> How many Variables should exist?
 
 > 100
 
-> Do you want to use family rules? type: 'true' or 'false'  
+> Do you want to use family rules? type: 'true' or 'false'
 
 > true
 
-> How large may families be min-max. Example: 1-4
-
->  1-6
-
-> Only the (family) rules result in a variance of: 1125899906842624  
+> Only the (family) rules result in a variance of: 36279705600000  
 > respectively  
-> 1.125.899.906.842.624
+> 36.279.705.600.000  
 > What variance should be maintained, with the other rules added independently of the families?  
-> Write WITHOUT points. The result can deviate up to 5% from the variance entered.  
+> Write WITHOUT points. The result can deviate up to 5% from the variance entered.points. The result can deviate up to 5% from the variance entered.
 
 > 1000000000
 
 > Maximum deviation in the result: 50000000  
 > what lengths should the other family independent rules have. e.g. (2-6)  
-> You should start with min Rule size = 2. If rule size is 1 the variable in this rule will be always false  
+> You should start with min Rule size = 2. If rule size is 1 the variable in this rule will be always false
 
 > 2-6
 
@@ -127,8 +123,11 @@ If 'None' is chosen a random seed on the basis of current time and date will be 
 
 > This results in 4 variables that should always be False  
 > What percentage of the variables should be True. Slice as decimal number. e.g. 0.09  
-> Now there are 6 True Vars in rule set  
+> Now there are 4 True Vars in rule set
 
-> 0.09
+> 0.08
 
-> This results in 9 variables that should always be True  
+> This results in 8 variables that should always be True
+
+After answering all questions, the program will start to pick random variables, create rules with them and verify them with satisfiability and variance.
+

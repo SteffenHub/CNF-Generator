@@ -24,8 +24,8 @@ public class Main {
         SatSolver satSolver = new SatSolver(rules);
         int[] triedFalseTrueVars = new int[]{0, 0};
         List<int[]> rulesGeneratedByNow = new ArrayList<>();
-        int numberGenerateRules = 400;
-        int numberGenerateRulesInput = 400;
+        int numberGenerateRules = 100;
+        int numberGenerateRulesInput = 100;
 
         boolean varianceReached = false;
         while (!varianceReached) {
