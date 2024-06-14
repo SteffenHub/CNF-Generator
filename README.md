@@ -19,33 +19,41 @@ In the conjunctive normal form, this is written as:
 # Example CNF:
 The following CNF-file can be found in output CNF Folder.  
 The input from [Example Dialog](#example-dialog) was used to generate this CNF-file.
->c  
->c Input Variance: 1000000000  
->c Actual Variance: 957916787  
->c Input number of vars: 100  
->c Input use Fam rules: true  
->c Input Fam size: 1-6  
->c Input Rule size: 2-6  
->c Input False Variables: 4  
->c Actual False Variables: 4 Vars  
->c Input True Variables: 7  
->c Actual True Variables: 7 Vars  
->c Calculation time: 1279 seconds  
->c Used Seed: 8267530071919704081  
->c  
->p cnf 100 621  
->1 2 3 4 5 0  
->-1 -2 0  
->-1 -3 0  
->-1 -4 0  
+> c  
+> c Input Variance: 1000000000  
+> c Actual Variance: 983340976  
+> c Input number of vars: 100  
+> c Input use Fam rules: true  
+> c Input Fam size: 1-6  
+> c Input Rule size: 2-6  
+> c Input False Variables: 4  
+> c Actual False Variables: 4 Vars  
+> c Input True Variables: 8  
+> c Actual True Variables: 8 Vars  
+> c Calculation time: 3924 seconds  
+> c Used Seed: -6346747620071058722  
+> c  
+> p cnf 100 705  
+> 1 2 3 4 0  
+> -1 -2 0  
+> -1 -3 0  
+> -1 -4 0  
+> -2 -3 0  
+> -2 -4 0  
 > ...  
->-69 -4 0  
->-60 -78 -9 -32 0  
->-6 -25 -1 -30 0  
->-11 -54 -37 -94 -66 0  
->-81 -96 -66 -57 0  
->-27 -45 -75 -63 0  
->-86 -47 0  
+> 84 0   
+> ...  
+> -51 -62 -46 -70 0  
+> -14 -11 -41 0  
+> -31 -38 -94 -54 0  
+> -7 -41 -72 -36 0  
+> -47 -73 0  
+> -87 -45 0  
+> -45 -29 -52 -74 -44 -80 0  
+> -6 -37 -41 0  
+> -32 -90 -78 -38 -65 0  
+> -71 -54 0  
+> -99 -46 0  
 > ...
 
 # Run
