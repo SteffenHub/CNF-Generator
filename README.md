@@ -5,13 +5,11 @@ After answering all questions, the program will start to pick random variables,
 create rules with them and verify them with satisfiability and variance.
 The rules are set up so that all variables are negated in a clause.
 This is fixed by us, if you do not want this,
-it must currently be changed in the code.  
+it must currently be changed in the code. 
 
 Family rules can be used if you answer with true in the dialog.  
 A family means variables that are in an XOR relationship.  
-For example a Family of 1, 2 and 3.  
-means:  
-> (1 XOR 2 XOR 3)  
+For example a Family of 1, 2 and 3 means you can choose exactly one of them.
 
 In the conjunctive normal form, this is written as:
 > ((1 ∨ 2 ∨ 3) ∧ (!1 ∨ !2) ∧ (!1 ∨ !3) ∧ (!2 ∨ !3))
