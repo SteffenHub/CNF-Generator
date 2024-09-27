@@ -1,4 +1,7 @@
 # CNF-Generator
+
+The related paper can be found here: [Design Society](https://www.designsociety.org/publication/47699/Generation+of+Rule-Based+Variance+Schemes+Towards+a+Data-Driven+Development+of+High-Variant+Product+Portfolios)  
+
 This code generates CNF files based on input data that is entered in a dialog.  
 An example of a dialog can be found here [Example Dialog](#example-dialog). 
 After answering all questions, the program will start to pick random variables, 
