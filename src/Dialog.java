@@ -11,6 +11,10 @@ import java.util.*;
 public class Dialog {
 
     /**
+     * default constructor
+     */
+    public Dialog(){}
+    /**
      * The scanner for the user input.
      */
     private Scanner scanner;
@@ -61,6 +65,11 @@ public class Dialog {
         return iD;
     }
 
+    /**
+     * Asks user which seed to use
+     *
+     * @return the input seed
+     */
     private long askForSeed(){
         System.out.println("Do you want to use a specific seed for the random generator?");
         System.out.println("Example: '698234689'. If you don't want to use a seed type 'None'");
@@ -78,6 +87,11 @@ public class Dialog {
         return this.askForSeed();
     }
 
+    /**
+     * Asks the user which counting solver to use.
+     *
+     * @return The selected counting solver
+     */
     private String askForCountSolver(){
         System.out.println("Which counting solver do you want to use. Choose between 'c2d' or 'sharpSAT'.");
         String line = this.scanner.nextLine();
@@ -141,6 +155,7 @@ public class Dialog {
      * @param numberOfVariables The number of variables in the CNF problem.
      * @param minFamSize The minimum size of a family.
      * @param maxFamSize The maximum size of a family.
+     * @param rand the random generator
      * @return A list of family rules.
      */
     private List<int[]> generateAndPrintFamilyRules(int numberOfVariables, int minFamSize, int maxFamSize, Random rand){
@@ -196,6 +211,8 @@ public class Dialog {
      * @param numberOfVariables The number of variables in the CNF problem.
      * @param minFamilySize The minimum size of a family.
      * @param maxFamilySize The maximum size of a family.
+     * @param countSolver the counting solver that should be used
+     * @param rand the random generator
      * @return The variance of the family rules as BigInteger.
      */
     private BigInteger getAndPrintVariance(List<int[]> familyRules, int numberOfVariables, int minFamilySize, int maxFamilySize, String countSolver, Random rand){

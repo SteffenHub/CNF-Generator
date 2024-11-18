@@ -10,11 +10,24 @@ import java.util.List;
 public class TxtConverter {
 
     /**
+     * default constructor
+     */
+    public TxtConverter(){}
+
+    /**
      * This method converts the given list of rules into a list of strings, which can be written to a file.
      * The format of each rule is a string of integers separated by spaces, where the last integer is 0.
      * The first line of the file contains the number of variables and the number of rules.
      * This method is used for the CNF problem with families.
      * It adds the actual variance and the actual number of false and true variables to the file.
+     * @param rules the result cnf als list of rules as int array
+     * @param actualFalseVars how many variables are always false in this rule set
+     * @param seed the used seed for the random generator
+     * @param actualTrueVars how many variables are always true in this rule set
+     * @param calculationTime the whole calculation time for the rule set
+     * @param inputData all input data given by the user at the beginning
+     * @param variance what is the variance of this ruleset
+     * @return a list of strings which can be written to a text file with all input data, actual data and all rules from the cnf
      */
     public static List<String> convertRulesToStringListCNF(List<int[]> rules, InputData inputData, BigInteger variance,
                                                            int actualFalseVars, int actualTrueVars, long calculationTime, long seed) {

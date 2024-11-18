@@ -7,10 +7,16 @@ import java.nio.charset.StandardCharsets;
 public class TxtReaderWriter {
 
     /**
+     * default constructor
+     */
+    public TxtReaderWriter(){}
+
+    /**
      * This method writes a list of strings to a file. Each String is written in a new line.
      *
      * @param nameOfFileWithEnding The name of the file with the ending. For example: "result.cnf"
      * @param contentList The list of strings to be written to the file.
+     * @param printConfirmation true if there should be a confirmation in the console that the file was saved
      * @throws IOException If the file cannot be written.
      */
     public static void writeArrayOfStrings(String nameOfFileWithEnding, String[] contentList, boolean printConfirmation) throws IOException {

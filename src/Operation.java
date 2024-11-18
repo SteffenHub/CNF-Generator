@@ -9,6 +9,20 @@ import java.util.List;
  */
 public class Operation {
 
+    /**
+    default constructor
+     */
+    public Operation(){}
+
+    /**
+     * runs the selected counting solver and returns the variance if the given cnf
+     *
+     * @param countSolver which counting solver should be used
+     * @param cnf the cnf to calculate the variance for
+     * @param numberOfVariables how many variables are in the cnf
+     * @return the variance of the given cnf
+     * @throws Exception if the counting solver is unknown
+     */
     public static BigInteger getVariance(String countSolver, List<int[]> cnf, int numberOfVariables) throws Exception {
         if (countSolver.equals("c2d")){
             return getVariance_c2d(cnf, numberOfVariables);
@@ -80,6 +94,18 @@ public class Operation {
         }
     }
 
+    /**
+     * Calculates the variance of a given CNF (Conjunctive Normal Form) problem.
+     * This method first generates the CNF data from the provided list of clauses and the number of variables.
+     * Each clause is represented as an array of integers in the 'cnf' parameter. The CNF data is then written
+     * to a file ending with '.cnf'. Afterward, it runs the 'sharpSAT' console application to count the number of
+     * models (satisfying assignments) for the CNF problem. The count is parsed from the 'sharpSAT' output and returned.
+     *
+     * @param cnf A list of clauses, each represented as an array of integers, forming the CNF problem.
+     * @param numberOfVariables The number of variables in the CNF problem.
+     * @return A BigInteger representing the count of satisfying assignments (models) of the CNF problem.
+     * @throws Exception If the method is unable to read the counting models from the 'sharpSAT' output.
+     */
     public static BigInteger getVariance_sharpSAT(List<int[]> cnf, int numberOfVariables) throws Exception {
         // create the CNF output data
         String[] fileContent = new String[cnf.size() + 1];

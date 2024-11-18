@@ -6,6 +6,12 @@ import java.util.Random;
  * This class stores all the input data from the user.
  */
 public class InputData {
+
+    /**
+     * default constructor
+     */
+    public InputData(){}
+
     /**
      * The number of variables in the CNF problem.
      */
@@ -66,8 +72,18 @@ public class InputData {
      */
     public boolean useFamilies;
 
+    /**
+     * The counting solver that should be used
+     */
     public String countSolver;
 
+    /**
+     * The random generator created with the input seed
+     */
     public Random randomGenerator;
+
+    /**
+     * The input seed used for the random generator
+     */
     public long seed;
 }

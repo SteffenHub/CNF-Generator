@@ -9,6 +9,11 @@ import java.util.List;
 public class SolverUsages {
 
     /**
+     * default constructor
+     */
+    public SolverUsages(){}
+
+    /**
      * Checks if there is a logical implication between the two given boolean variables.
      * An implication exists when the truth of (condition and consequence) enforces the falsity of (condition and not consequence).
      * For example the rule: (a -&gt; b) which is logically equivalent to (NOT(a) or b). If we pass condition = a and consequence = b true will be returned.

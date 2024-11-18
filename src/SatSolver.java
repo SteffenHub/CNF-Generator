@@ -29,6 +29,12 @@ public class SatSolver {
         }
     }
 
+    /**
+     * Constructor for the SatSolver class
+     *
+     * @param cnf The rules in the form of a CNF. Example: ([1,2],[-2,3,1]) means: ((1 OR 2) AND (NOT(2) OR 3 OR 1))
+     * @throws ContradictionException If the rules are a contradiction. See: <a href="https://www.sat4j.org/maven23/org.sat4j.core/apidocs/org/sat4j/specs/ContradictionException.html">Sat4J documentation</a>
+     */
     public SatSolver(List<int[]> cnf) throws ContradictionException {
         //create new default Solver
         this.solver = SolverFactory.newDefault();

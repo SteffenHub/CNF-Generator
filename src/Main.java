@@ -5,7 +5,15 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
+/**
+ * The program entry point
+ */
 public class Main {
+
+    /**
+     * default constructor
+     */
+    public Main(){}
 
     /**
      * The main method of the application. It initiates a dialog to gather input data, constructs a set of rules
@@ -13,6 +21,10 @@ public class Main {
      * During each iteration, it attempts to add a new rule and checks if the new rule set meets the criteria,
      * including the number of always true/false variables and the target variance. If a rule does not meet the
      * criteria, it is discarded, and a new rule is tried. The process continues until the target variance is achieved.
+     * @param args not used
+     * @throws TimeoutException if the SatSolver max calculation time reached
+     * @throws ContradictionException if there is a contradiction in the created cnf
+     * @throws IOException error when reading ir writing files
      */
     public static void main(String[] args) throws ContradictionException, IOException, TimeoutException {
         InputData iD = new Dialog().startDialog();
@@ -137,6 +149,7 @@ public class Main {
      * @param triedFalseTrueVars An array tracking the number of attempts for finding true/false variables.
      * @param breakTries         The number of tries for finding always true/false rules. After which the method will
      *                           decrement the input goal for always true/false variables.
+     * @param rand               the random generator
      * @return An array representing the next rule to be added to the solver.
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
@@ -250,6 +263,7 @@ public class Main {
      *
      * @param allRules          The list of rules for the SAT problem, with each rule as an array of integers.
      * @param numberOfVariables The total number of variables in the SAT problem.
+     * @param countSolver       which counting solver should be used
      * @return The variance as a BigInteger, or a default error value if the calculation fails.
      */
     public static BigInteger getVariance(List<int[]> allRules, int numberOfVariables, String countSolver) {
