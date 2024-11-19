@@ -35,7 +35,9 @@ public class TxtConverter {
     public static List<String> convertRulesToStringListCNF(List<int[]> rules, InputData inputData, BigInteger variance,
                                                            int actualFalseVars, int actualTrueVars, long calculationTime, long seed) {
         List<String> fileOutput = new ArrayList<>();
+        String fileName = "cnfBuilder" + inputData.numberOfVariables + "Vars" + "Variance" + variance + ".txt";
         fileOutput.add("c ");
+        fileOutput.add("c File Name: " + fileName);
         fileOutput.add("c Input Variance: " + inputData.goalVariance);
         fileOutput.add("c Actual Variance: " + variance);
         fileOutput.add("c Input number of vars: " + inputData.numberOfVariables);

@@ -161,7 +161,7 @@ public class Dialog {
      * @param rand the random generator
      * @return A list of family rules.
      */
-    private List<int[]> generateAndPrintFamilyRules(int numberOfVariables, int minFamSize, int maxFamSize, Random rand){
+    public List<int[]> generateAndPrintFamilyRules(int numberOfVariables, int minFamSize, int maxFamSize, Random rand){
         List<int[]> familyRules = new ArrayList<>();
         int varRun = 0;
         while (varRun < numberOfVariables) {
