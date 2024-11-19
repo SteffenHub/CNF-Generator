@@ -37,7 +37,7 @@ public class Main {
             System.out.println(line);
         }
         // save to file
-        TxtReaderWriter.writeArrayOfStrings(resultFile.get(1), resultFile.toArray(new String[0]), true);
+        TxtReaderWriter.writeArrayOfStrings(resultFile.get(1).split("File Name: ")[1], resultFile.toArray(new String[0]), true);
         System.out.println("There is a file 'tmp_counting_input.cnf' in the project folder, containing the same output as the result. You can delete this file, if you want.");
         // TODO delete tmp_counting_input.cnf automatically
     }
