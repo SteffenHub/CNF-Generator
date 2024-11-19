@@ -1,3 +1,6 @@
+/**
+ * @author: SteffenHub (https://github.com/SteffenHub)
+ */
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 

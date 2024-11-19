@@ -1,3 +1,7 @@
+/**
+ * @author: SteffenHub (https://github.com/SteffenHub)
+ * source: https://github.com/SteffenHub/Sat4J-Interface
+ */
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.*;
