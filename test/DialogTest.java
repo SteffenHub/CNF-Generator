@@ -10,14 +10,36 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+/**
+ * test class for the dialog class
+ */
 class DialogTest {
 
+    /**
+     * default constructor
+     */
+    public DialogTest(){}
+
+    /**
+     * The number of variables in the cnf
+     */
     int numberOfVariables;
+    /**
+     * the minimum size for the families
+     */
     int minFamSize;
+    /**
+     * the maximum size for the families
+     */
     int maxFamSize;
+    /**
+     * the random generator used with seed
+     */
     Random rand;
 
+    /**
+     * Set up method run before each test
+     */
     @BeforeEach
     void setUp() {
         this.numberOfVariables = 10;
@@ -26,6 +48,9 @@ class DialogTest {
         this.rand = new Random(1234);
     }
 
+    /**
+     * test if the family rules build correctly
+     */
     @Test
     void generateAndPrintFamilyRules() {
         List<int[]> actual = new Dialog().generateAndPrintFamilyRules(this.numberOfVariables, this.minFamSize, this.maxFamSize, this.rand);

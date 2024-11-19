@@ -4,7 +4,6 @@
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +16,11 @@ import java.util.Random;
 public class Generator {
 
     /**
+     * default constructor
+     */
+    public Generator(){}
+
+    /**
      * The main logic of the application. It constructs a set of rules based on the data,
      * and then iteratively tries to find a set of rules that meet the specified variance criteria.
      * During each iteration, it attempts to add a new rule and checks if the new rule set meets the criteria,
@@ -25,9 +29,9 @@ public class Generator {
      * @param iD the user input
      * @throws TimeoutException if the SatSolver max calculation time reached
      * @throws ContradictionException if there is a contradiction in the created cnf
-     * @throws IOException error when reading ir writing files
+     * @return the list of string containing all lines for the output file
      */
-    public List<String> startGenerator(InputData iD) throws ContradictionException, IOException, TimeoutException{
+    public List<String> startGenerator(InputData iD) throws ContradictionException, TimeoutException{
         long startTime = System.currentTimeMillis();
         // All found Rules. Insert Family Rules
         List<int[]> rules = new ArrayList<>(iD.familyRules);

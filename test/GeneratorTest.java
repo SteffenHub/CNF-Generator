@@ -16,15 +16,37 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
+/**
+ * test class for the generator class
+ */
 class GeneratorTest {
 
+    /**
+     * default constructor
+     */
+    public GeneratorTest(){}
+
+    /**
+     * all input data to start the generator
+     */
     private InputData iD;
+
+    /**
+     * Set up method run before each test
+     */
     @BeforeEach
     void setUp() {
         this.iD = getInputData(true, new BigInteger("10"), new BigInteger("24"));
     }
 
+    /**
+     * builds the input data
+     *
+     * @param useFamilyRules should be family rules in the result rules
+     * @param goalVari the goal variance for the ruleset
+     * @param vari the current default variance. 2^10 if no family rules chosen
+     * @return the generated input data
+     */
     private InputData getInputData(boolean useFamilyRules, BigInteger goalVari, BigInteger vari){
         InputData iD = new InputData();
         iD.seed = 1234;
@@ -56,8 +78,14 @@ class GeneratorTest {
         return iD;
     }
 
+    /**
+     * normal input configuration with small cnf
+     *
+     * @throws TimeoutException if the SatSolver max calculation time reached
+     * @throws ContradictionException if there is a contradiction in the created cnf
+     */
     @Test
-    void startGeneratorWithFamilyRules() throws ContradictionException, IOException, TimeoutException {
+    void startGeneratorWithFamilyRules() throws ContradictionException, TimeoutException {
         List<String> expected = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance10WithFamilies.txt"))) {
             String line;
@@ -79,10 +107,9 @@ class GeneratorTest {
      *
      * @throws TimeoutException if the SatSolver max calculation time reached
      * @throws ContradictionException if there is a contradiction in the created cnf
-     * @throws IOException error when reading files
      */
     @Test
-    void startGeneratorWithoutFamilyRulesShort() throws ContradictionException, IOException, TimeoutException {
+    void startGeneratorWithoutFamilyRulesShort() throws ContradictionException, TimeoutException {
         this.iD = getInputData(false, new BigInteger("500"), new BigInteger("1024"));
         List<String> expected = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance512WithoutFamiliesShort.txt"))) {
@@ -106,10 +133,9 @@ class GeneratorTest {
      *
      * @throws TimeoutException if the SatSolver max calculation time reached
      * @throws ContradictionException if there is a contradiction in the created cnf
-     * @throws IOException error when reading files
      */
     @Test
-    void startGeneratorWithoutFamilyRulesLong() throws ContradictionException, IOException, TimeoutException {
+    void startGeneratorWithoutFamilyRulesLong() throws ContradictionException, TimeoutException {
         this.iD = getInputData(false, new BigInteger("200"), new BigInteger("1024"));
         List<String> expected = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance200WithoutFamiliesLong.txt"))) {
