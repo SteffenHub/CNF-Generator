@@ -22,10 +22,10 @@ class GeneratorTest {
     private InputData iD;
     @BeforeEach
     void setUp() {
-        this.iD = getInputData(true);
+        this.iD = getInputData(true, new BigInteger("10"), new BigInteger("24"));
     }
 
-    private InputData getInputData(boolean useFamilyRules){
+    private InputData getInputData(boolean useFamilyRules, BigInteger goalVari, BigInteger vari){
         InputData iD = new InputData();
         iD.seed = 1234;
         iD.randomGenerator = new Random(iD.seed);
@@ -44,8 +44,7 @@ class GeneratorTest {
                 iD.familyRules.add(new int[]{i, -i});
             }
         }
-        iD.variance = new BigInteger("24"); // TODO
-        BigInteger goalVari = new BigInteger("10");
+        iD.variance = vari; // TODO
         BigInteger[] goalVarianceAndDeviation = new BigInteger[]{goalVari, Operation.calculatePercentage(goalVari, 5)};
         iD.goalVariance = goalVarianceAndDeviation[0];
         iD.goalVarianceDeviation = goalVarianceAndDeviation[1];
@@ -58,9 +57,62 @@ class GeneratorTest {
     }
 
     @Test
-    void startGenerator() throws ContradictionException, IOException, TimeoutException {
+    void startGeneratorWithFamilyRules() throws ContradictionException, IOException, TimeoutException {
         List<String> expected = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance10.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance10WithFamilies.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                expected.add(line);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<String> actual = new Generator().startGenerator(this.iD);
+
+        actual.removeIf(s -> s.startsWith("c Calculation time:"));
+        expected.removeIf(s -> s.startsWith("c Calculation time:"));
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test will exclude choose 9 as always true so no more false variables are possible -> actual != input
+     *
+     * @throws TimeoutException if the SatSolver max calculation time reached
+     * @throws ContradictionException if there is a contradiction in the created cnf
+     * @throws IOException error when reading files
+     */
+    @Test
+    void startGeneratorWithoutFamilyRulesShort() throws ContradictionException, IOException, TimeoutException {
+        this.iD = getInputData(false, new BigInteger("500"), new BigInteger("1024"));
+        List<String> expected = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance512WithoutFamiliesShort.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                expected.add(line);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<String> actual = new Generator().startGenerator(this.iD);
+
+        actual.removeIf(s -> s.startsWith("c Calculation time:"));
+        expected.removeIf(s -> s.startsWith("c Calculation time:"));
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * enough variance left to exclude a variable after choose 9 as always true.
+     * And place for 'normal rules'
+     *
+     * @throws TimeoutException if the SatSolver max calculation time reached
+     * @throws ContradictionException if there is a contradiction in the created cnf
+     * @throws IOException error when reading files
+     */
+    @Test
+    void startGeneratorWithoutFamilyRulesLong() throws ContradictionException, IOException, TimeoutException {
+        this.iD = getInputData(false, new BigInteger("200"), new BigInteger("1024"));
+        List<String> expected = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("test/testData/cnfBuilder10VarsVariance200WithoutFamiliesLong.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 expected.add(line);

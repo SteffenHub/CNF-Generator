@@ -146,6 +146,7 @@ public class Generator {
      * @throws TimeoutException If the SAT solver calculation takes too long.
      */
     public static int[] getNextRule(SatSolver satSolver, InputData iD, int[] triedFalseTrueVars, int breakTries, Random rand) throws TimeoutException {
+        // TODO it is possible that a rule have the same variable more than one time
         int[] trueVars = SolverUsages.getAlwaysTrueVars(satSolver, iD.numberOfVariables);
         if (iD.trueVars > trueVars.length) {
             ++triedFalseTrueVars[1];
